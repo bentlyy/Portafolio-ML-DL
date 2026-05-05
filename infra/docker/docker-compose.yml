@@ -1,17 +1,30 @@
-version: '3.9'
-
 services:
   ml-service:
-    build: ../../ml-services/project-1-ml
+    build:
+      context: ../../ml-services/main-service
+      dockerfile: Dockerfile
     container_name: ml-service
     ports:
       - "8000:8000"
     volumes:
-      - ../../ml-services/project-1-ml:/app
+      - ../../ml-services/main-service:/app
+      - /app/venv
+    environment:
+      - PYTHONUNBUFFERED=1
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - ml-portfolio
 
   backend:
-    build: ../../backend
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
     container_name: backend
     ports:
       - "3000:3000"
@@ -19,7 +32,40 @@ services:
       - ../../backend:/app
       - /app/node_modules
     depends_on:
-      - ml-service
+      ml-service:
+        condition: service_healthy
     environment:
+      - NODE_ENV=development
+      - PORT=3000
       - ML_SERVICE_URL=http://ml-service:8000
     command: npm run dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - ml-portfolio
+
+  frontend:
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3001:3001"
+    volumes:
+      - ../../frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://localhost:3000
+    command: npm run dev
+    networks:
+      - ml-portfolio
+
+networks:
+  ml-portfolio:
+    driver: bridge

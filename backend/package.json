@@ -1,28 +1,24 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "ML Portfolio API - Express backend",
+  "main": "dist/app.js",
   "scripts": {
     "dev": "tsx watch src/app.ts",
     "build": "tsc",
     "start": "node dist/app.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "license": "MIT",
   "dependencies": {
     "axios": "^1.16.0",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1"
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^5.0.0"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
-    "@types/node": "^25.6.0",
-    "ts-node-dev": "^2.0.0",
-    "tsx": "^4.21.0",
-    "typescript": "^6.0.3"
+    "@types/express": "^5.0.0",
+    "@types/node": "^20.17.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
   }
 }

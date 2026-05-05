@@ -1,6 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form
-from pydantic import BaseModel, Field
-from typing import Any
+from pydantic import BaseModel as PydanticBaseModel, ConfigDict
+from typing import Any, List
 import pandas as pd
 import io
 import logging
@@ -18,12 +18,14 @@ app = FastAPI(
 )
 
 
-class PredictRequest(BaseModel):
-    data: list[list[float]]
+class PredictRequest(PydanticBaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+    data: List[List[float]]
     model_id: str
 
 
-class TrainRequest(BaseModel):
+class TrainRequest(PydanticBaseModel):
+    model_config = ConfigDict(protected_namespaces=())
     model_id: str
     target_column: str | None = None
     hyperparameters: dict[str, Any] = {}

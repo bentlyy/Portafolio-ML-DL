@@ -1,10 +1,7 @@
 import numpy as np
 import pandas as pd
 import time
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset
+from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from app.models.base import BaseModel, ModelInfo, TrainingResult
@@ -13,37 +10,18 @@ NEURAL_NETWORK_INFO = ModelInfo(
     model_id="neural_network",
     name="Neural Network (MLP)",
     model_type="deep_learning",
-    description="Multi-Layer Perceptron with configurable architecture. Demonstrates deep learning fundamentals with PyTorch.",
+    description="Multi-Layer Perceptron with configurable hidden layers, activation functions, and regularization. Demonstrates deep learning fundamentals.",
     category="neural_network",
     supported_tasks=["binary", "multiclass", "regression"],
     hyperparameters={
-        "hidden_layers": {"type": "string", "default": "128,64", "description": "Comma-separated hidden layer sizes"},
-        "learning_rate": {"type": "float", "default": 0.001, "min": 0.0001, "max": 0.1, "description": "Learning rate"},
-        "epochs": {"type": "int", "default": 100, "min": 10, "max": 1000, "description": "Training epochs"},
-        "batch_size": {"type": "int", "default": 32, "min": 8, "max": 256, "description": "Batch size"},
-        "dropout": {"type": "float", "default": 0.2, "min": 0.0, "max": 0.8, "description": "Dropout rate"},
+        "hidden_layer_sizes": {"type": "string", "default": "128,64", "description": "Comma-separated hidden layer sizes (e.g., 128,64)"},
+        "activation": {"type": "choice", "default": "relu", "options": ["relu", "tanh", "logistic"], "description": "Activation function"},
+        "solver": {"type": "choice", "default": "adam", "options": ["adam", "sgd", "lbfgs"], "description": "Optimization algorithm"},
+        "learning_rate_init": {"type": "float", "default": 0.001, "min": 0.0001, "max": 0.1, "description": "Initial learning rate"},
+        "max_iter": {"type": "int", "default": 300, "min": 50, "max": 2000, "description": "Max iterations"},
+        "alpha": {"type": "float", "default": 0.0001, "min": 0.00001, "max": 1.0, "description": "L2 regularization"},
     },
 )
-
-
-class MLP(nn.Module):
-    def __init__(self, input_dim: int, hidden_layers: list[int], output_dim: int, dropout: float = 0.2):
-        super().__init__()
-        layers = []
-        prev = input_dim
-
-        for h in hidden_layers:
-            layers.append(nn.Linear(prev, h))
-            layers.append(nn.ReLU())
-            layers.append(nn.BatchNorm1d(h))
-            layers.append(nn.Dropout(dropout))
-            prev = h
-
-        layers.append(nn.Linear(prev, output_dim))
-        self.network = nn.Sequential(*layers)
-
-    def forward(self, x):
-        return self.network(x)
 
 
 class NeuralNetworkModel(BaseModel):
@@ -51,70 +29,60 @@ class NeuralNetworkModel(BaseModel):
         super().__init__(NEURAL_NETWORK_INFO)
         self.model = None
         self.scaler = StandardScaler()
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.task_type = "classification"
-        self.output_dim = 2
-        self.input_dim = None
-
-    def _build_model(self, input_dim, output_dim, hidden_layers, dropout):
-        return MLP(input_dim, hidden_layers, output_dim, dropout).to(self.device)
 
     def train(self, X: pd.DataFrame, y: pd.Series = None, **kwargs) -> TrainingResult:
         start = time.time()
 
-        hidden_layers_str = kwargs.get("hidden_layers", "128,64")
-        if isinstance(hidden_layers_str, str):
-            hidden_layers = [int(x) for x in hidden_layers_str.split(",")]
+        hidden_str = kwargs.get("hidden_layer_sizes", "128,64")
+        if isinstance(hidden_str, str):
+            hidden_layers = tuple(int(x) for x in hidden_str.split(","))
         else:
-            hidden_layers = hidden_layers_str
+            hidden_layers = tuple(hidden_str)
 
-        learning_rate = float(kwargs.get("learning_rate", 0.001))
-        epochs = int(kwargs.get("epochs", 100))
-        batch_size = int(kwargs.get("batch_size", 32))
-        dropout = float(kwargs.get("dropout", 0.2))
-
-        self.input_dim = X.shape[1]
+        activation = kwargs.get("activation", "relu")
+        solver = kwargs.get("solver", "adam")
+        lr = float(kwargs.get("learning_rate_init", 0.001))
+        max_iter = int(kwargs.get("max_iter", 300))
+        alpha = float(kwargs.get("alpha", 0.0001))
 
         X_scaled = self.scaler.fit_transform(X.values)
 
-        is_regression = y is None or pd.api.types.is_numeric_dtype(y) and y.nunique() > 10
+        is_regression = y is None or (pd.api.types.is_numeric_dtype(y) and y.nunique() > 10)
 
         if is_regression:
             self.task_type = "regression"
-            self.output_dim = 1
+            self.model = MLPRegressor(
+                hidden_layer_sizes=hidden_layers,
+                activation=activation,
+                solver=solver,
+                learning_rate_init=lr,
+                max_iter=max_iter,
+                alpha=alpha,
+                random_state=42,
+                early_stopping=True,
+                validation_fraction=0.1,
+            )
             y_values = y.astype(float).values if y is not None else np.zeros(len(X))
         else:
             self.task_type = "classification"
-            unique_classes = np.unique(y)
-            self.output_dim = len(unique_classes)
-            class_map = {c: i for i, c in enumerate(unique_classes)}
-            y_values = np.array([class_map[c] for c in y])
+            self.model = MLPClassifier(
+                hidden_layer_sizes=hidden_layers,
+                activation=activation,
+                solver=solver,
+                learning_rate_init=lr,
+                max_iter=max_iter,
+                alpha=alpha,
+                random_state=42,
+                early_stopping=True,
+                validation_fraction=0.1,
+            )
+            y_values = y.values
 
-        X_tensor = torch.FloatTensor(X_scaled).to(self.device)
-        y_tensor = torch.FloatTensor(y_values).to(self.device) if self.task_type == "regression" else torch.LongTensor(y_values).to(self.device)
-
-        dataset = TensorDataset(X_tensor, y_tensor)
-        loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-
-        self.model = self._build_model(self.input_dim, self.output_dim, hidden_layers, dropout)
-
-        criterion = nn.MSELoss() if self.task_type == "regression" else nn.CrossEntropyLoss()
-        optimizer = optim.Adam(self.model.parameters(), lr=learning_rate)
-
-        self.model.train()
-        for epoch in range(epochs):
-            epoch_loss = 0
-            for batch_X, batch_y in loader:
-                optimizer.zero_grad()
-                outputs = self.model(batch_X)
-                loss = criterion(outputs.squeeze(), batch_y)
-                loss.backward()
-                optimizer.step()
-                epoch_loss += loss.item()
-
+        self.model.fit(X_scaled, y_values)
         training_time = time.time() - start
 
-        y_pred = self.predict_internal(X_scaled)
+        y_pred = self.model.predict(X_scaled)
 
         if self.task_type == "regression":
             from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
@@ -125,50 +93,37 @@ class NeuralNetworkModel(BaseModel):
                 "r2": round(float(r2_score(y_values, y_pred)), 4),
             }
         else:
-            y_pred_class = np.argmax(y_pred, axis=1)
             metrics = {
-                "accuracy": round(float(accuracy_score(y_values, y_pred_class)), 4),
-                "precision": round(float(precision_score(y_values, y_pred_class, average="weighted", zero_division=0)), 4),
-                "recall": round(float(recall_score(y_values, y_pred_class, average="weighted", zero_division=0)), 4),
-                "f1": round(float(f1_score(y_values, y_pred_class, average="weighted", zero_division=0)), 4),
+                "accuracy": round(float(accuracy_score(y_values, y_pred)), 4),
+                "precision": round(float(precision_score(y_values, y_pred, average="weighted", zero_division=0)), 4),
+                "recall": round(float(recall_score(y_values, y_pred, average="weighted", zero_division=0)), 4),
+                "f1": round(float(f1_score(y_values, y_pred, average="weighted", zero_division=0)), 4),
             }
+
+        model_params = self.model.get_params()
+        if "hidden_layer_sizes" in model_params:
+            model_params["hidden_layer_sizes"] = list(model_params["hidden_layer_sizes"])
 
         return TrainingResult(
             model_id=self.model_info.model_id,
             metrics=metrics,
             training_time=training_time,
-            model_params={
-                "hidden_layers": hidden_layers,
-                "learning_rate": learning_rate,
-                "epochs": epochs,
-                "batch_size": batch_size,
-                "dropout": dropout,
-                "device": str(self.device),
-            },
+            model_params=model_params,
         )
-
-    def predict_internal(self, X_scaled):
-        self.model.eval()
-        X_tensor = torch.FloatTensor(X_scaled).to(self.device)
-        with torch.no_grad():
-            output = self.model(X_tensor)
-            if self.task_type == "regression":
-                return output.squeeze().cpu().numpy()
-            else:
-                return torch.softmax(output, dim=1).cpu().numpy()
 
     def predict(self, X: pd.DataFrame) -> dict:
         X_scaled = self.scaler.transform(X.values)
-        predictions = self.predict_internal(X_scaled)
+        predictions = self.model.predict(X_scaled)
 
         if self.task_type == "regression":
             return {"predictions": predictions.tolist()}
         else:
-            probs = predictions.tolist()
-            pred_classes = np.argmax(predictions, axis=1).tolist()
+            probs = self.model.predict_proba(X_scaled)
+            classes = self.model.classes_.tolist()
             return {
-                "predictions": pred_classes,
-                "probabilities": probs,
+                "predictions": predictions.tolist(),
+                "probabilities": probs.tolist(),
+                "classes": classes,
             }
 
     def get_hyperparameters(self) -> dict:

@@ -7,23 +7,27 @@ interface Props {
   onSelect: (model: ModelInfo) => void;
 }
 
-export default function ModelSelector({ models, categories, selectedModel, onSelect }: Props) {
-  const getCategoryIcon = (cat: string) => {
-    switch (cat) {
-      case 'classification': return '🎯';
-      case 'regression': return '📈';
-      case 'clustering': return '🔵';
-      case 'neural_network': return '🧠';
-      default: return '🤖';
-    }
-  };
+const categoryLabels: Record<string, string> = {
+  classification: 'Clasificación',
+  regression: 'Regresión',
+  clustering: 'Agrupamiento',
+  neural_network: 'Red Neuronal',
+};
 
+const categoryIcons: Record<string, string> = {
+  classification: '🎯',
+  regression: '📈',
+  clustering: '🔵',
+  neural_network: '🧠',
+};
+
+export default function ModelSelector({ models, categories, selectedModel, onSelect }: Props) {
   return (
     <div className="model-selector">
       {Object.entries(categories).map(([category, modelIds]) => (
         <div key={category} className="category-group">
           <h3>
-            {getCategoryIcon(category)} {category.charAt(0).toUpperCase() + category.slice(1)}
+            {categoryIcons[category] || '🤖'} {categoryLabels[category] || category}
           </h3>
           <div className="model-list">
             {modelIds.map(id => {

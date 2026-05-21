@@ -12,8 +12,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
-    title="ML Portfolio Service",
-    description="Unified ML/DL model service with multiple algorithms, dataset upload, and training capabilities.",
+    title="Servicio ML Portafolio",
+    description="Servicio unificado de modelos ML/DL con múltiples algoritmos, carga de datasets y capacidades de entrenamiento.",
     version="2.0.0",
 )
 
@@ -66,7 +66,7 @@ def get_hyperparameters(model_id: str):
 @app.post("/upload-dataset")
 async def upload_dataset(file: UploadFile = File(...)):
     if not file.filename.endswith(".csv"):
-        raise HTTPException(status_code=400, detail="Only CSV files are supported")
+        raise HTTPException(status_code=400, detail="Solo se aceptan archivos CSV")
 
     content = await file.read()
     try:
@@ -82,7 +82,7 @@ async def upload_dataset(file: UploadFile = File(...)):
             "missing_values": df.isnull().sum().to_dict(),
         }
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error parsing CSV: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Error al procesar CSV: {str(e)}")
 
 
 @app.post("/models/{model_id}/train")
@@ -98,13 +98,13 @@ async def train_model(
         raise HTTPException(status_code=404, detail=str(e))
 
     if not file.filename.endswith(".csv"):
-        raise HTTPException(status_code=400, detail="Only CSV files are supported")
+        raise HTTPException(status_code=400, detail="Solo se aceptan archivos CSV")
 
     content = await file.read()
     try:
         df = pd.read_csv(io.BytesIO(content))
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error parsing CSV: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Error al procesar CSV: {str(e)}")
 
     df = df.dropna()
 
@@ -115,7 +115,7 @@ async def train_model(
         if not target_column or target_column not in df.columns:
             raise HTTPException(
                 status_code=400,
-                detail=f"Target column '{target_column}' not found. Available: {df.columns.tolist()}",
+                detail=f"Columna objetivo '{target_column}' no encontrada. Disponibles: {df.columns.tolist()}",
             )
 
         y = df[target_column]
@@ -130,15 +130,15 @@ async def train_model(
         try:
             params = json.loads(hyperparameters)
         except json.JSONDecodeError:
-            raise HTTPException(status_code=400, detail="Invalid hyperparameters JSON")
+            raise HTTPException(status_code=400, detail="JSON de hiperparámetros inválido")
 
     try:
         result = model.train(X, y, **params)
         model.is_trained = True
         return result.to_dict()
     except Exception as e:
-        logger.error(f"Training error: {e}")
-        raise HTTPException(status_code=500, detail=f"Training failed: {str(e)}")
+        logger.error(f"Error de entrenamiento: {e}")
+        raise HTTPException(status_code=500, detail=f"Entrenamiento fallido: {str(e)}")
 
 
 @app.post("/predict")
@@ -151,7 +151,7 @@ async def predict(request: PredictRequest):
     if not model.is_trained:
         raise HTTPException(
             status_code=400,
-            detail="Model has not been trained yet. Train it first with /models/{model_id}/train",
+            detail="El modelo aún no ha sido entrenado. Entrénalo primero con /models/{model_id}/train",
         )
 
     try:
@@ -159,7 +159,7 @@ async def predict(request: PredictRequest):
         result = model.predict(X)
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Predicción fallida: {str(e)}")
 
 
 @app.post("/models/{model_id}/predict-from-file")
@@ -176,11 +176,11 @@ async def predict_from_file(
     if not model.is_trained:
         raise HTTPException(
             status_code=400,
-            detail="Model has not been trained yet. Train it first.",
+            detail="El modelo aún no ha sido entrenado. Entrénalo primero.",
         )
 
     if not file.filename.endswith(".csv"):
-        raise HTTPException(status_code=400, detail="Only CSV files are supported")
+        raise HTTPException(status_code=400, detail="Solo se aceptan archivos CSV")
 
     content = await file.read()
     try:
@@ -198,4 +198,4 @@ async def predict_from_file(
         result = model.predict(df)
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Predicción fallida: {str(e)}")

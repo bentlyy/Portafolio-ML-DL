@@ -14,13 +14,13 @@ RANDOM_FOREST_INFO = ModelInfo(
     model_id="random_forest",
     name="Random Forest",
     model_type="ensemble",
-    description="Ensemble method using multiple decision trees with bagging. Robust to overfitting, handles non-linear relationships well.",
+    description="Método de ensamblaje que usa múltiples árboles de decisión con bagging. Robusto contra sobreajuste, maneja bien relaciones no lineales.",
     category="classification",
     supported_tasks=["binary", "multiclass"],
     hyperparameters={
-        "n_estimators": {"type": "int", "default": 100, "min": 10, "max": 500, "description": "Number of trees"},
-        "max_depth": {"type": "int", "default": 10, "min": 2, "max": 50, "description": "Maximum tree depth"},
-        "min_samples_split": {"type": "int", "default": 2, "min": 2, "max": 20, "description": "Min samples to split"},
+        "n_estimators": {"type": "int", "default": 100, "min": 10, "max": 500, "description": "Número de árboles"},
+        "max_depth": {"type": "int", "default": 10, "min": 2, "max": 50, "description": "Profundidad máxima del árbol"},
+        "min_samples_split": {"type": "int", "default": 2, "min": 2, "max": 20, "description": "Mín. muestras para dividir"},
     },
 )
 
@@ -28,13 +28,13 @@ GRADIENT_BOOSTING_INFO = ModelInfo(
     model_id="gradient_boosting",
     name="Gradient Boosting (XGBoost-style)",
     model_type="ensemble",
-    description="Sequential ensemble that corrects errors of previous trees. State-of-the-art for tabular data competitions.",
+    description="Ensamblaje secuencial que corrige errores de árboles anteriores. Estado del arte para competiciones de datos tabulares.",
     category="classification",
     supported_tasks=["binary", "multiclass"],
     hyperparameters={
-        "n_estimators": {"type": "int", "default": 100, "min": 10, "max": 500, "description": "Number of boosting rounds"},
-        "learning_rate": {"type": "float", "default": 0.1, "min": 0.01, "max": 1.0, "description": "Step size shrinkage"},
-        "max_depth": {"type": "int", "default": 3, "min": 1, "max": 20, "description": "Maximum tree depth"},
+        "n_estimators": {"type": "int", "default": 100, "min": 10, "max": 500, "description": "Número de rondas de boosting"},
+        "learning_rate": {"type": "float", "default": 0.1, "min": 0.01, "max": 1.0, "description": "Tasa de aprendizaje"},
+        "max_depth": {"type": "int", "default": 3, "min": 1, "max": 20, "description": "Profundidad máxima del árbol"},
     },
 )
 
@@ -42,27 +42,27 @@ SVM_INFO = ModelInfo(
     model_id="svm",
     name="Support Vector Machine (SVM)",
     model_type="kernel",
-    description="Finds optimal hyperplane with maximum margin. Effective in high-dimensional spaces using kernel tricks.",
+    description="Encuentra el hiperplano óptimo con margen máximo. Efectivo en espacios de alta dimensionalidad usando trucos de kernel.",
     category="classification",
     supported_tasks=["binary", "multiclass"],
     hyperparameters={
-        "C": {"type": "float", "default": 1.0, "min": 0.01, "max": 100.0, "description": "Regularization parameter"},
-        "kernel": {"type": "choice", "default": "rbf", "options": ["linear", "rbf", "poly"], "description": "Kernel type"},
-        "gamma": {"type": "choice", "default": "scale", "options": ["scale", "auto"], "description": "Kernel coefficient"},
+        "C": {"type": "float", "default": 1.0, "min": 0.01, "max": 100.0, "description": "Parámetro de regularización"},
+        "kernel": {"type": "choice", "default": "rbf", "options": ["linear", "rbf", "poly"], "description": "Tipo de kernel"},
+        "gamma": {"type": "choice", "default": "scale", "options": ["scale", "auto"], "description": "Coeficiente del kernel"},
     },
 )
 
 LOGISTIC_REGRESSION_INFO = ModelInfo(
     model_id="logistic_regression",
-    name="Logistic Regression",
+    name="Regresión Logística",
     model_type="linear",
-    description="Linear classifier using logistic function. Interpretable, fast, good baseline model.",
+    description="Clasificador lineal que usa función logística. Interpretable, rápido, buen modelo de referencia.",
     category="classification",
     supported_tasks=["binary", "multiclass"],
     hyperparameters={
-        "C": {"type": "float", "default": 1.0, "min": 0.01, "max": 100.0, "description": "Inverse regularization"},
-        "penalty": {"type": "choice", "default": "l2", "options": ["l1", "l2", "elasticnet"], "description": "Penalty type"},
-        "max_iter": {"type": "int", "default": 1000, "min": 100, "max": 10000, "description": "Max iterations"},
+        "C": {"type": "float", "default": 1.0, "min": 0.01, "max": 100.0, "description": "Regularización inversa"},
+        "penalty": {"type": "choice", "default": "l2", "options": ["l1", "l2", "elasticnet"], "description": "Tipo de penalización"},
+        "max_iter": {"type": "int", "default": 1000, "min": 100, "max": 10000, "description": "Máx. iteraciones"},
     },
 )
 
@@ -222,11 +222,12 @@ class LogisticRegressionModel(BaseModel):
 
     def train(self, X: pd.DataFrame, y: pd.Series, **kwargs) -> TrainingResult:
         start = time.time()
-        params = {k: v for k, v in kwargs.items() if k != "penalty"}
-        if "penalty" in kwargs:
-            if kwargs["penalty"] == "l1":
+        params = dict(kwargs)
+        if "penalty" in params:
+            penalty = params["penalty"]
+            if penalty == "l1":
                 params["solver"] = "liblinear"
-            elif kwargs["penalty"] == "elasticnet":
+            elif penalty == "elasticnet":
                 params["solver"] = "saga"
                 params["l1_ratio"] = 0.5
         self.model.set_params(**params)
@@ -234,14 +235,18 @@ class LogisticRegressionModel(BaseModel):
         training_time = time.time() - start
 
         y_pred = self.model.predict(X)
-        feature_imp = dict(zip(X.columns, self.model.coef_[0].tolist()))
+        if self.model.coef_.ndim > 1:
+            coef = np.mean(np.abs(self.model.coef_), axis=0)
+        else:
+            coef = np.abs(self.model.coef_)
+        feature_imp = dict(zip(X.columns, [round(float(c), 4) for c in coef]))
 
         return TrainingResult(
             model_id=self.model_info.model_id,
             metrics=self._calc_metrics(y, y_pred),
             training_time=training_time,
             model_params=self.model.get_params(),
-            feature_importance={k: round(abs(v), 4) for k, v in feature_imp.items()},
+            feature_importance=feature_imp,
             confusion_matrix=confusion_matrix(y, y_pred).tolist(),
             classification_report=classification_report(y, y_pred, output_dict=True),
         )

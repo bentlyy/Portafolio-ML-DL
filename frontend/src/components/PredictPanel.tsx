@@ -21,8 +21,9 @@ export default function PredictPanel({ modelId }: Props) {
       );
       const prediction = await mlApi.predict(modelId, rows);
       setResult(prediction);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Prediction failed');
+    } catch (err) {
+      const axiosErr = err as { response?: { data?: { detail?: string } } };
+      setError(axiosErr.response?.data?.detail || 'Prediction failed');
     } finally {
       setLoading(false);
     }
@@ -32,7 +33,7 @@ export default function PredictPanel({ modelId }: Props) {
     <div className="predict-panel">
       <div className="input-section">
         <label>
-          Input Data (comma-separated, one sample per line):
+          Datos de Entrada (separados por coma, una muestra por línea):
         </label>
         <textarea
           value={inputData}
@@ -41,7 +42,7 @@ export default function PredictPanel({ modelId }: Props) {
           rows={5}
         />
         <button onClick={handlePredict} disabled={loading || !inputData.trim()}>
-          {loading ? 'Predicting...' : 'Predict'}
+          {loading ? 'Prediciendo...' : 'Predecir'}
         </button>
       </div>
 
@@ -49,11 +50,11 @@ export default function PredictPanel({ modelId }: Props) {
 
       {result && (
         <div className="prediction-results">
-          <h4>Results</h4>
+          <h4>Resultados</h4>
           <div className="predictions-list">
             {result.predictions.map((pred, i) => (
               <div key={i} className="prediction-item">
-                <span className="sample-label">Sample {i + 1}</span>
+                <span className="sample-label">Muestra {i + 1}</span>
                 <span className="prediction-value">{pred}</span>
                 {result.probabilities?.[i] && (
                   <div className="probabilities">

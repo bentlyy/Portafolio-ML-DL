@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import time
 from sklearn.cluster import KMeans, DBSCAN, AgglomerativeClustering
+from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import silhouette_score, calinski_harabasz_score
 from app.models.base import BaseModel, ModelInfo, TrainingResult
 
@@ -9,13 +10,13 @@ KMEANS_INFO = ModelInfo(
     model_id="kmeans",
     name="K-Means",
     model_type="centroid",
-    description="Partitions data into K clusters by minimizing within-cluster variance. Fast and scalable for large datasets.",
+    description="Particiona datos en K grupos minimizando la varianza dentro de cada grupo. Rápido y escalable para grandes conjuntos de datos.",
     category="clustering",
     supported_tasks=["unsupervised"],
     hyperparameters={
-        "n_clusters": {"type": "int", "default": 3, "min": 2, "max": 20, "description": "Number of clusters"},
-        "max_iter": {"type": "int", "default": 300, "min": 50, "max": 1000, "description": "Max iterations"},
-        "n_init": {"type": "int", "default": 10, "min": 1, "max": 50, "description": "Number of initializations"},
+        "n_clusters": {"type": "int", "default": 3, "min": 2, "max": 20, "description": "Número de grupos"},
+        "max_iter": {"type": "int", "default": 300, "min": 50, "max": 1000, "description": "Máx. iteraciones"},
+        "n_init": {"type": "int", "default": 10, "min": 1, "max": 50, "description": "Número de inicializaciones"},
     },
 )
 
@@ -23,25 +24,25 @@ DBSCAN_INFO = ModelInfo(
     model_id="dbscan",
     name="DBSCAN",
     model_type="density",
-    description="Density-based clustering. Finds arbitrary-shaped clusters and identifies outliers. No need to specify K.",
+    description="Agrupamiento basado en densidad. Encuentra grupos de forma arbitraria e identifica valores atípicos. No necesita especificar K.",
     category="clustering",
     supported_tasks=["unsupervised"],
     hyperparameters={
-        "eps": {"type": "float", "default": 0.5, "min": 0.01, "max": 10.0, "description": "Max distance between samples"},
-        "min_samples": {"type": "int", "default": 5, "min": 1, "max": 50, "description": "Min samples for core point"},
+        "eps": {"type": "float", "default": 1.0, "min": 0.01, "max": 10.0, "description": "Distancia máxima entre muestras (datos auto-escalados)"},
+        "min_samples": {"type": "int", "default": 5, "min": 1, "max": 50, "description": "Mín. muestras para punto central"},
     },
 )
 
 HIERARCHICAL_INFO = ModelInfo(
     model_id="hierarchical",
-    name="Agglomerative Clustering",
+    name="Agrupamiento Jerárquico",
     model_type="hierarchical",
-    description="Bottom-up hierarchical clustering. Builds a tree of clusters. No assumptions about cluster shape.",
+    description="Agrupamiento jerárquico ascendente. Construye un árbol de grupos. Sin suposiciones sobre la forma de los grupos.",
     category="clustering",
     supported_tasks=["unsupervised"],
     hyperparameters={
-        "n_clusters": {"type": "int", "default": 3, "min": 2, "max": 20, "description": "Number of clusters"},
-        "linkage": {"type": "choice", "default": "ward", "options": ["ward", "complete", "average", "single"], "description": "Linkage criterion"},
+        "n_clusters": {"type": "int", "default": 3, "min": 2, "max": 20, "description": "Número de grupos"},
+        "linkage": {"type": "choice", "default": "ward", "options": ["ward", "complete", "average", "single"], "description": "Criterio de enlace"},
     },
 )
 
@@ -94,23 +95,26 @@ class KMeansModel(BaseModel):
 class DBSCANModel(BaseModel):
     def __init__(self):
         super().__init__(DBSCAN_INFO)
-        self.model = DBSCAN(eps=0.5, min_samples=5)
+        self.model = DBSCAN(eps=1.0, min_samples=5)
+        self.scaler = StandardScaler()
 
     def train(self, X: pd.DataFrame, y: pd.Series = None, **kwargs) -> TrainingResult:
         start = time.time()
         self.model.set_params(**kwargs)
-        labels = self.model.fit_predict(X)
+        X_scaled = self.scaler.fit_transform(X.values)
+        labels = self.model.fit_predict(X_scaled)
         training_time = time.time() - start
 
         return TrainingResult(
             model_id=self.model_info.model_id,
-            metrics=_calc_metrics(X.values, labels),
+            metrics=_calc_metrics(X_scaled, labels),
             training_time=training_time,
             model_params=self.model.get_params(),
         )
 
     def predict(self, X: pd.DataFrame) -> dict:
-        labels = self.model.fit_predict(X)
+        X_scaled = self.scaler.transform(X.values)
+        labels = self.model.fit_predict(X_scaled)
         unique_labels = list(set(labels))
         return {
             "clusters": labels.tolist(),
@@ -129,22 +133,25 @@ class HierarchicalClusteringModel(BaseModel):
     def __init__(self):
         super().__init__(HIERARCHICAL_INFO)
         self.model = AgglomerativeClustering(n_clusters=3, linkage="ward")
+        self.scaler = StandardScaler()
 
     def train(self, X: pd.DataFrame, y: pd.Series = None, **kwargs) -> TrainingResult:
         start = time.time()
         self.model.set_params(**kwargs)
-        labels = self.model.fit_predict(X)
+        X_scaled = self.scaler.fit_transform(X.values)
+        labels = self.model.fit_predict(X_scaled)
         training_time = time.time() - start
 
         return TrainingResult(
             model_id=self.model_info.model_id,
-            metrics=_calc_metrics(X.values, labels),
+            metrics=_calc_metrics(X_scaled, labels),
             training_time=training_time,
             model_params=self.model.get_params(),
         )
 
     def predict(self, X: pd.DataFrame) -> dict:
-        labels = self.model.fit_predict(X)
+        X_scaled = self.scaler.transform(X.values)
+        labels = self.model.fit_predict(X_scaled)
         return {"clusters": labels.tolist()}
 
     def get_hyperparameters(self) -> dict:

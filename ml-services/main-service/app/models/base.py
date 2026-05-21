@@ -63,6 +63,7 @@ class TrainingResult:
             "metrics": self.metrics,
             "training_time_seconds": round(self.training_time, 3),
             "timestamp": self.timestamp,
+            "model_params": self.model_params,
         }
         if self.feature_importance:
             result["feature_importance"] = self.feature_importance

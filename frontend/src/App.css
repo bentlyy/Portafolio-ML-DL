@@ -359,6 +359,63 @@ th {
   padding: 2rem;
 }
 
+/* Algorithm Explanations */
+.algorithm-explanations {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.algorithm-explanations h3 {
+  font-size: 1.1rem;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+
+.explanations-intro {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 1.25rem;
+}
+
+.explanation-category {
+  margin-bottom: 1.25rem;
+}
+
+.explanation-category h4 {
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin-bottom: 0.35rem;
+}
+
+.explanation-category > p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.explanation-category ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.explanation-category li {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-input);
+  border-radius: 6px;
+  border-left: 3px solid var(--accent);
+}
+
+.explanation-category li strong {
+  color: var(--text-primary);
+}
+
 /* Error */
 .error-banner {
   background: rgba(239, 68, 68, 0.1);

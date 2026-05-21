@@ -41,11 +41,10 @@ services:
     container_name: frontend
     ports:
       - "3001:3001"
-    volumes:
-      - ../../frontend:/app
-      - /app/node_modules
     depends_on:
       - backend
     environment:
       - VITE_API_URL=http://localhost:3000
-    command: npm run dev
+      - VITE_PROXY_TARGET=http://backend:3000
+      - WATCHPACK_POLLING=true
+    command: npx vite --host --port 3001

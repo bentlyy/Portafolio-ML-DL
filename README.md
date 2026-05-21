@@ -45,7 +45,7 @@ A full-stack machine learning platform with interactive model training, dataset 
 ### Neural Networks (1 model)
 | Model | Framework | Best For |
 |-------|-----------|----------|
-| MLP (Multi-Layer Perceptron) | PyTorch | Deep learning fundamentals, custom architectures |
+| MLP (Multi-Layer Perceptron) | scikit-learn | Neural network with configurable hidden layers |
 
 ## Project Structure
 
@@ -77,7 +77,7 @@ ml-portafolio/
 │       │       ├── classifiers.py # 4 classification models
 │       │       ├── regressors.py  # 4 regression models
 │       │       ├── clustering.py  # 3 clustering models
-│       │       └── neural_networks.py  # PyTorch MLP
+│       │       └── neural_networks.py  # scikit-learn MLP
 │       └── scripts/
 │           └── generate_datasets.py  # Sample dataset generator
 ├── infra/docker/                  # Docker Compose
@@ -156,18 +156,18 @@ Datasets saved to `ml-services/main-service/scripts/datasets/`
 
 ## Features
 
-- **12 ML/DL Models** across 4 categories (classification, regression, clustering, neural networks)
+- **12 ML Models** across 4 categories (classification, regression, clustering, neural networks)
 - **Interactive Playground** - Select model → Upload dataset → Configure hyperparameters → Train → Predict
 - **Real-time Metrics** - Accuracy, Precision, Recall, F1, MSE, RMSE, R², Silhouette Score
 - **Visualizations** - Confusion matrix, feature importance bars, classification reports
 - **CSV Upload** - Drag & drop with dataset preview, column analysis, missing value detection
 - **Hyperparameter Tuning** - Configure model parameters via UI with type validation
-- **PyTorch MLP** - Deep learning model with configurable architecture, dropout, batch normalization
+- **Neural Network** - scikit-learn MLP with configurable hidden layers
 
 ## Tech Stack
 
 - **Frontend**: React 19, TypeScript, Vite 6
 - **Backend**: Express 5, TypeScript, Axios
-- **ML Service**: FastAPI, Python 3.10, scikit-learn, XGBoost, PyTorch
+- **ML Service**: FastAPI, Python 3.10, scikit-learn
 - **Infrastructure**: Docker, Docker Compose
-- **ML Libraries**: scikit-learn, pandas, numpy, matplotlib, seaborn, torch
+- **ML Libraries**: scikit-learn, pandas, numpy, scipy

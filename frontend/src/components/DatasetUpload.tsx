@@ -1,8 +1,10 @@
 import { useRef, useState } from 'react';
 
+import type { DatasetInfo } from '../api/ml';
+
 interface Props {
   onFileSelect: (file: File) => void;
-  datasetInfo: any | null;
+  datasetInfo: DatasetInfo | null;
   targetColumn: string;
   onTargetChange: (col: string) => void;
   showTarget: boolean;
@@ -44,7 +46,7 @@ export default function DatasetUpload({ onFileSelect, datasetInfo, targetColumn,
         />
         <div className="drop-content">
           <span className="drop-icon">📁</span>
-          <p>Drop CSV file here or click to browse</p>
+          <p>Arrastra un archivo CSV o haz clic para buscar</p>
         </div>
       </div>
 
@@ -52,14 +54,14 @@ export default function DatasetUpload({ onFileSelect, datasetInfo, targetColumn,
         <div className="dataset-info">
           <div className="info-header">
             <h4>{datasetInfo.filename}</h4>
-            <span className="info-badge">{datasetInfo.rows} rows × {datasetInfo.columns} cols</span>
+            <span className="info-badge">{datasetInfo.rows} filas × {datasetInfo.columns} cols</span>
           </div>
 
           {showTarget && (
             <div className="target-selector">
-              <label>Target Column:</label>
+              <label>Columna Objetivo:</label>
               <select value={targetColumn} onChange={e => onTargetChange(e.target.value)}>
-                <option value="">-- Select target --</option>
+                <option value="">-- Seleccionar objetivo --</option>
                 {datasetInfo.column_names.map((col: string) => (
                   <option key={col} value={col}>{col}</option>
                 ))}
@@ -68,7 +70,7 @@ export default function DatasetUpload({ onFileSelect, datasetInfo, targetColumn,
           )}
 
           <div className="dataset-preview">
-            <h5>Preview (first 5 rows)</h5>
+            <h5>Vista Previa (primeras 5 filas)</h5>
             <div className="table-container">
               <table>
                 <thead>
@@ -91,12 +93,12 @@ export default function DatasetUpload({ onFileSelect, datasetInfo, targetColumn,
             </div>
           </div>
 
-          {Object.entries(datasetInfo.missing_values as Record<string, number>).some(([, v]) => v > 0) && (
+          {Object.entries(datasetInfo.missing_values as Record<string, number>).some(([, v]: [string, number]) => v > 0) && (
             <div className="missing-info">
-              <h5>Missing Values</h5>
-              {Object.entries(datasetInfo.missing_values)
-                .filter(([, v]) => v > 0)
-                .map(([col, count]) => (
+              <h5>Valores Faltantes</h5>
+              {Object.entries(datasetInfo.missing_values as Record<string, number>)
+                .filter(([, v]: [string, number]) => v > 0)
+                .map(([col, count]: [string, number]) => (
                   <span key={col} className="missing-badge">{col}: {count}</span>
                 ))}
             </div>

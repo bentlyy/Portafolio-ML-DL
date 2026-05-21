@@ -3,23 +3,26 @@ import { type ModelInfo, type Hyperparameter } from '../api/ml';
 
 interface Props {
   model: ModelInfo;
-  hyperparameters: Record<string, unknown>;
   onHyperparameterChange: (params: Record<string, unknown>) => void;
   onTrain: () => void;
   loading: boolean;
 }
 
-export default function TrainingPanel({ model, hyperparameters, onHyperparameterChange, onTrain, loading }: Props) {
-  const [params, setParams] = useState<Record<string, unknown>>({});
+function getDefaultParams(model: ModelInfo): Record<string, unknown> {
+  const defaults: Record<string, unknown> = {};
+  Object.entries(model.hyperparameters).forEach(([key, hp]) => {
+    defaults[key] = hp.default;
+  });
+  return defaults;
+}
+
+export default function TrainingPanel({ model, onHyperparameterChange, onTrain, loading }: Props) {
+  const [params, setParams] = useState<Record<string, unknown>>(() => getDefaultParams(model));
 
   useEffect(() => {
-    const defaults: Record<string, unknown> = {};
-    Object.entries(model.hyperparameters).forEach(([key, hp]) => {
-      defaults[key] = hp.default;
-    });
-    setParams(defaults);
-    onHyperparameterChange(defaults);
-  }, [model]);
+    onHyperparameterChange(params);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const updateParam = (key: string, value: unknown) => {
     const updated = { ...params, [key]: value };
@@ -97,7 +100,7 @@ export default function TrainingPanel({ model, hyperparameters, onHyperparameter
 
       {Object.keys(model.hyperparameters).length > 0 && (
         <div className="hyperparams">
-          <h4>Hyperparameters</h4>
+          <h4>Hiperparámetros</h4>
           {Object.entries(model.hyperparameters).map(([key, hp]) => (
             <div key={key} className="param-row">
               <label>
@@ -115,7 +118,7 @@ export default function TrainingPanel({ model, hyperparameters, onHyperparameter
         onClick={onTrain}
         disabled={loading}
       >
-        {loading ? 'Training...' : 'Train Model'}
+        {loading ? 'Entrenando...' : 'Entrenar Modelo'}
       </button>
     </div>
   );

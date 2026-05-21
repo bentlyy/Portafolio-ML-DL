@@ -18,7 +18,7 @@ Frontend (Vite) :3001 --> Backend (Express) :3000 --> ML Service (FastAPI) :8000
 |-----------|-----------|------|
 | Frontend | React 19, TypeScript, Vite 6 | 3001 |
 | Backend | Express 5, TypeScript | 3000 |
-| ML Service | FastAPI, Python 3.10, scikit-learn, PyTorch | 8000 |
+| ML Service | FastAPI, Python 3.10, scikit-learn, joblib | 8000 |
 
 ## Commands
 
@@ -99,13 +99,13 @@ ml-portafolio/
 - random_forest, gradient_boosting, svm, logistic_regression
 
 ### Regression (4)
-- linear_regression, ridge_regression, random_forest_regressor, gradient_boosting_regressor
+- linear_regression, ridge, random_forest_regressor, gradient_boosting_regressor
 
 ### Clustering (3)
-- kmeans, dbscan, agglomerative
+- kmeans, dbscan, hierarchical
 
 ### Neural Networks (1)
-- mlp (PyTorch)
+- neural_network (scikit-learn MLP)
 
 ## API Endpoints
 
@@ -124,9 +124,9 @@ ml-portafolio/
    - Extend `BaseModel` interface
    - Implement `train()`, `predict()`, `get_hyperparameters()`
 
-2. **Register model** in `registry.py`:
+2. **Register model** in `registry.py` by adding to `_register_models()`:
    ```python
-   registry.register("model_name", ModelClass, ModelCategory)
+   self.models["model_name"] = ModelClass()
    ```
 
 3. **Update frontend** `src/api/ml.ts` - add model metadata if needed

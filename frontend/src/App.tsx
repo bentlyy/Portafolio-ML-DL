@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { mlApi, type ModelInfo } from './api/ml';
+import { mlApi, type ModelInfo, type DatasetInfo, type TrainingResult } from './api/ml';
 import './App.css';
 import ModelSelector from './components/ModelSelector';
 import DatasetUpload from './components/DatasetUpload';
@@ -8,14 +8,16 @@ import TrainingPanel from './components/TrainingPanel';
 import MetricsDisplay from './components/MetricsDisplay';
 import PredictPanel from './components/PredictPanel';
 
+import AlgorithmExplanations from './components/AlgorithmExplanations';
+
 function Navigation() {
   const location = useLocation();
   return (
     <nav className="navbar">
-      <div className="nav-brand">ML Portfolio</div>
+      <div className="nav-brand">ML Portafolio</div>
       <div className="nav-links">
-        <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Playground</Link>
-        <Link to="/models" className={location.pathname === '/models' ? 'active' : ''}>Models</Link>
+        <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Laboratorio</Link>
+        <Link to="/models" className={location.pathname === '/models' ? 'active' : ''}>Modelos</Link>
       </div>
     </nav>
   );
@@ -26,10 +28,10 @@ function PlaygroundPage() {
   const [categories, setCategories] = useState<Record<string, string[]>>({});
   const [selectedModel, setSelectedModel] = useState<ModelInfo | null>(null);
   const [datasetFile, setDatasetFile] = useState<File | null>(null);
-  const [datasetInfo, setDatasetInfo] = useState<any>(null);
+  const [datasetInfo, setDatasetInfo] = useState<DatasetInfo | null>(null);
   const [targetColumn, setTargetColumn] = useState<string>('');
   const [hyperparameters, setHyperparameters] = useState<Record<string, unknown>>({});
-  const [trainingResult, setTrainingResult] = useState<any>(null);
+  const [trainingResult, setTrainingResult] = useState<TrainingResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,7 +39,7 @@ function PlaygroundPage() {
     mlApi.getModels().then(data => {
       setModels(data.models);
       setCategories(data.categories);
-    }).catch(err => console.error('Error loading models:', err));
+    }).catch(err => console.error('Error al cargar modelos:', err));
   }, []);
 
   const handleFileUpload = async (file: File) => {
@@ -52,8 +54,9 @@ function PlaygroundPage() {
           .map(([col]) => col);
         setTargetColumn(numericCols[numericCols.length - 1] || '');
       }
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Error uploading dataset');
+    } catch (err) {
+      const axiosErr = err as { response?: { data?: { detail?: string } } };
+      setError(axiosErr.response?.data?.detail || 'Error al subir dataset');
     }
   };
 
@@ -66,8 +69,9 @@ function PlaygroundPage() {
       const target = selectedModel.category === 'clustering' ? undefined : targetColumn;
       const result = await mlApi.trainModel(selectedModel.model_id, datasetFile, target, hyperparameters);
       setTrainingResult(result);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Training failed');
+    } catch (err) {
+      const axiosErr = err as { response?: { data?: { detail?: string } } };
+      setError(axiosErr.response?.data?.detail || 'Entrenamiento fallido');
     } finally {
       setLoading(false);
     }
@@ -77,7 +81,7 @@ function PlaygroundPage() {
     <div className="playground">
       <div className="playground-grid">
         <div className="panel">
-          <h2>1. Select Model</h2>
+          <h2>1. Seleccionar Modelo</h2>
           <ModelSelector
             models={models}
             categories={categories}
@@ -87,7 +91,7 @@ function PlaygroundPage() {
         </div>
 
         <div className="panel">
-          <h2>2. Upload Dataset</h2>
+          <h2>2. Subir Dataset</h2>
           <DatasetUpload
             onFileSelect={handleFileUpload}
             datasetInfo={datasetInfo}
@@ -95,20 +99,21 @@ function PlaygroundPage() {
             onTargetChange={setTargetColumn}
             showTarget={selectedModel?.category !== 'clustering'}
           />
+          <AlgorithmExplanations model={selectedModel} />
         </div>
 
         <div className="panel">
-          <h2>3. Configure & Train</h2>
+          <h2>3. Configurar y Entrenar</h2>
           {selectedModel && (
             <TrainingPanel
+              key={selectedModel.model_id}
               model={selectedModel}
-              hyperparameters={hyperparameters}
               onHyperparameterChange={setHyperparameters}
               onTrain={handleTrain}
               loading={loading}
             />
           )}
-          {!selectedModel && <p className="hint">Select a model to configure</p>}
+          {!selectedModel && <p className="hint">Selecciona un modelo para configurar</p>}
         </div>
       </div>
 
@@ -116,20 +121,42 @@ function PlaygroundPage() {
 
       {trainingResult && (
         <div className="panel results-panel">
-          <h2>Training Results</h2>
+          <h2>Resultados del Entrenamiento</h2>
           <MetricsDisplay result={trainingResult} />
         </div>
       )}
 
       {trainingResult && selectedModel?.category !== 'clustering' && (
         <div className="panel">
-          <h2>4. Make Predictions</h2>
-          <PredictPanel modelId={selectedModel.model_id} />
+          <h2>4. Hacer Predicciones</h2>
+          <PredictPanel modelId={selectedModel!.model_id} />
         </div>
       )}
     </div>
   );
 }
+
+const categoryLabels: Record<string, string> = {
+  classification: 'Clasificación',
+  regression: 'Regresión',
+  clustering: 'Agrupamiento',
+  neural_network: 'Red Neuronal',
+};
+
+const categoryIcons: Record<string, string> = {
+  classification: '🎯',
+  regression: '📈',
+  clustering: '🔵',
+  neural_network: '🧠',
+};
+
+const taskLabels: Record<string, string> = {
+  binary: 'Binaria',
+  multiclass: 'Multiclase',
+  continuous: 'Continua',
+  unsupervised: 'No supervisado',
+  regression: 'Regresión',
+};
 
 function ModelsPage() {
   const [models, setModels] = useState<ModelInfo[]>([]);
@@ -144,10 +171,12 @@ function ModelsPage() {
 
   return (
     <div className="models-page">
-      <h1>Available Models</h1>
+      <h1>Modelos Disponibles</h1>
       {Object.entries(categories).map(([category, modelIds]) => (
         <div key={category} className="category-section">
-          <h2 className="category-title">{category.charAt(0).toUpperCase() + category.slice(1)}</h2>
+          <h2 className="category-title">
+            {categoryIcons[category] || '🤖'} {categoryLabels[category] || category}
+          </h2>
           <div className="models-grid">
             {modelIds.map(id => {
               const model = models.find(m => m.model_id === id);
@@ -158,7 +187,7 @@ function ModelsPage() {
                   <span className={`badge ${model.model_type}`}>{model.model_type}</span>
                   <p>{model.description}</p>
                   <div className="model-meta">
-                    <span>Tasks: {model.supported_tasks.join(', ')}</span>
+                    <span>Tareas: {model.supported_tasks.map(t => taskLabels[t] || t).join(', ')}</span>
                     <span>Params: {Object.keys(model.hyperparameters).length}</span>
                   </div>
                 </div>

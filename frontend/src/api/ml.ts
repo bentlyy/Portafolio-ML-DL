@@ -47,9 +47,9 @@ export interface TrainingResult {
 }
 
 export interface PredictionResult {
-  predictions: number[];
+  predictions: (number | string)[];
   probabilities?: number[][];
-  classes?: number[];
+  classes?: (number | string)[];
 }
 
 export const mlApi = {

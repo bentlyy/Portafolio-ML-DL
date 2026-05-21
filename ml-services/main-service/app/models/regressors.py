@@ -8,53 +8,53 @@ from app.models.base import BaseModel, ModelInfo, TrainingResult
 
 LINEAR_REGRESSION_INFO = ModelInfo(
     model_id="linear_regression",
-    name="Linear Regression",
+    name="Regresión Lineal",
     model_type="linear",
-    description="Basic linear model fitting a hyperplane to minimize squared errors. Interpretable baseline for regression.",
+    description="Modelo lineal básico que ajusta un hiperplano para minimizar errores cuadrados. Línea base interpretable para regresión.",
     category="regression",
     supported_tasks=["continuous"],
     hyperparameters={
-        "fit_intercept": {"type": "bool", "default": True, "description": "Calculate intercept"},
+        "fit_intercept": {"type": "bool", "default": True, "description": "Calcular intercepto"},
     },
 )
 
 RIDGE_REGRESSION_INFO = ModelInfo(
     model_id="ridge",
-    name="Ridge Regression",
+    name="Regresión Ridge",
     model_type="linear",
-    description="Linear regression with L2 regularization. Prevents overfitting with coefficient shrinkage.",
+    description="Regresión lineal con regularización L2. Previene sobreajuste mediante contracción de coeficientes.",
     category="regression",
     supported_tasks=["continuous"],
     hyperparameters={
-        "alpha": {"type": "float", "default": 1.0, "min": 0.01, "max": 100.0, "description": "Regularization strength"},
+        "alpha": {"type": "float", "default": 1.0, "min": 0.01, "max": 100.0, "description": "Fuerza de regularización"},
     },
 )
 
 RANDOM_FOREST_REGRESSOR_INFO = ModelInfo(
     model_id="random_forest_regressor",
-    name="Random Forest Regressor",
+    name="Random Forest Regresor",
     model_type="ensemble",
-    description="Ensemble of decision trees averaging predictions. Handles non-linear relationships and feature interactions.",
+    description="Ensamblaje de árboles de decisión que promedia predicciones. Maneja relaciones no lineales e interacciones entre características.",
     category="regression",
     supported_tasks=["continuous"],
     hyperparameters={
-        "n_estimators": {"type": "int", "default": 100, "min": 10, "max": 500, "description": "Number of trees"},
-        "max_depth": {"type": "int", "default": 10, "min": 2, "max": 50, "description": "Maximum tree depth"},
-        "min_samples_split": {"type": "int", "default": 2, "min": 2, "max": 20, "description": "Min samples to split"},
+        "n_estimators": {"type": "int", "default": 100, "min": 10, "max": 500, "description": "Número de árboles"},
+        "max_depth": {"type": "int", "default": 10, "min": 2, "max": 50, "description": "Profundidad máxima del árbol"},
+        "min_samples_split": {"type": "int", "default": 2, "min": 2, "max": 20, "description": "Mín. muestras para dividir"},
     },
 )
 
 GRADIENT_BOOSTING_REGRESSOR_INFO = ModelInfo(
     model_id="gradient_boosting_regressor",
-    name="Gradient Boosting Regressor",
+    name="Gradient Boosting Regresor",
     model_type="ensemble",
-    description="Sequential ensemble correcting prediction errors. Powerful for complex regression tasks.",
+    description="Ensamblaje secuencial que corrige errores de predicción. Potente para tareas de regresión complejas.",
     category="regression",
     supported_tasks=["continuous"],
     hyperparameters={
-        "n_estimators": {"type": "int", "default": 100, "min": 10, "max": 500, "description": "Number of boosting rounds"},
-        "learning_rate": {"type": "float", "default": 0.1, "min": 0.01, "max": 1.0, "description": "Step size shrinkage"},
-        "max_depth": {"type": "int", "default": 3, "min": 1, "max": 20, "description": "Maximum tree depth"},
+        "n_estimators": {"type": "int", "default": 100, "min": 10, "max": 500, "description": "Número de rondas de boosting"},
+        "learning_rate": {"type": "float", "default": 0.1, "min": 0.01, "max": 1.0, "description": "Tasa de aprendizaje"},
+        "max_depth": {"type": "int", "default": 3, "min": 1, "max": 20, "description": "Profundidad máxima del árbol"},
     },
 )
 

@@ -1,5 +1,12 @@
 import { type TrainingResult } from '../api/ml';
 
+interface ClassificationMetrics {
+  precision: number;
+  recall: number;
+  'f1-score': number;
+  support: number;
+}
+
 interface Props {
   result: TrainingResult;
 }
@@ -22,18 +29,18 @@ export default function MetricsDisplay({ result }: Props) {
 
   const getMetricLabel = (key: string) => {
     const labels: Record<string, string> = {
-      accuracy: 'Accuracy',
-      precision: 'Precision',
-      recall: 'Recall',
-      f1: 'F1 Score',
-      mse: 'MSE',
-      rmse: 'RMSE',
-      mae: 'MAE',
-      r2: 'R² Score',
-      silhouette_score: 'Silhouette Score',
+      accuracy: 'Precisión',
+      precision: 'Precisión',
+      recall: 'Exhaustividad',
+      f1: 'Puntaje F1',
+      mse: 'ECM',
+      rmse: 'RECM',
+      mae: 'EAM',
+      r2: 'R²',
+      silhouette_score: 'Silueta',
       calinski_harabasz: 'Calinski-Harabasz',
-      n_clusters: 'Clusters',
-      n_noise: 'Noise Points',
+      n_clusters: 'Grupos',
+      n_noise: 'Puntos de Ruido',
     };
     return labels[key] || key;
   };
@@ -42,11 +49,11 @@ export default function MetricsDisplay({ result }: Props) {
     <div className="metrics-display">
       <div className="metrics-header">
         <div className="metric-badge">
-          <span className="label">Model</span>
+          <span className="label">Modelo</span>
           <span className="value">{result.model_id}</span>
         </div>
         <div className="metric-badge">
-          <span className="label">Time</span>
+          <span className="label">Tiempo</span>
           <span className="value">{result.training_time_seconds}s</span>
         </div>
       </div>
@@ -62,7 +69,7 @@ export default function MetricsDisplay({ result }: Props) {
 
       {result.feature_importance && Object.keys(result.feature_importance).length > 0 && (
         <div className="feature-importance">
-          <h4>Feature Importance</h4>
+          <h4>Importancia de Características</h4>
           <div className="feature-bars">
             {Object.entries(result.feature_importance)
               .sort(([, a], [, b]) => Math.abs(b) - Math.abs(a))
@@ -89,7 +96,7 @@ export default function MetricsDisplay({ result }: Props) {
 
       {result.confusion_matrix && (
         <div className="confusion-matrix">
-          <h4>Confusion Matrix</h4>
+          <h4>Matriz de Confusión</h4>
           <div className="cm-grid">
             {result.confusion_matrix.map((row: number[], i: number) => (
               <div key={i} className="cm-row">
@@ -117,15 +124,15 @@ export default function MetricsDisplay({ result }: Props) {
 
       {result.classification_report && (
         <div className="classification-report">
-          <h4>Classification Report</h4>
+          <h4>Reporte de Clasificación</h4>
           <table>
             <thead>
               <tr>
-                <th>Class</th>
-                <th>Precision</th>
-                <th>Recall</th>
+                <th>Clase</th>
+                <th>Precisión</th>
+                <th>Exhaustividad</th>
                 <th>F1-Score</th>
-                <th>Support</th>
+                <th>Soporte</th>
               </tr>
             </thead>
             <tbody>
@@ -134,15 +141,15 @@ export default function MetricsDisplay({ result }: Props) {
                 .map(([cls, metrics]) => (
                   <tr key={cls}>
                     <td>{cls}</td>
-                    <td>{(metrics as any).precision?.toFixed(4)}</td>
-                    <td>{(metrics as any).recall?.toFixed(4)}</td>
-                    <td>{(metrics as any)['f1-score']?.toFixed(4)}</td>
-                    <td>{(metrics as any).support}</td>
+                    <td>{(metrics as unknown as ClassificationMetrics).precision?.toFixed(4)}</td>
+                    <td>{(metrics as unknown as ClassificationMetrics).recall?.toFixed(4)}</td>
+                    <td>{(metrics as unknown as ClassificationMetrics)['f1-score']?.toFixed(4)}</td>
+                    <td>{(metrics as unknown as ClassificationMetrics).support}</td>
                   </tr>
                 ))}
               {result.classification_report['weighted avg'] && (
                 <tr className="avg-row">
-                  <td>Weighted Avg</td>
+                  <td>Promedio Ponderado</td>
                   <td>{result.classification_report['weighted avg'].precision?.toFixed(4)}</td>
                   <td>{result.classification_report['weighted avg'].recall?.toFixed(4)}</td>
                   <td>{result.classification_report['weighted avg']['f1-score']?.toFixed(4)}</td>

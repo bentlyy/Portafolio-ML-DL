@@ -8,18 +8,18 @@ from app.models.base import BaseModel, ModelInfo, TrainingResult
 
 NEURAL_NETWORK_INFO = ModelInfo(
     model_id="neural_network",
-    name="Neural Network (MLP)",
+    name="Red Neuronal (MLP)",
     model_type="deep_learning",
-    description="Multi-Layer Perceptron with configurable hidden layers, activation functions, and regularization. Demonstrates deep learning fundamentals.",
+    description="Perceptrón Multicapa con capas ocultas configurables, funciones de activación y regularización. Demuestra fundamentos de deep learning.",
     category="neural_network",
     supported_tasks=["binary", "multiclass", "regression"],
     hyperparameters={
-        "hidden_layer_sizes": {"type": "string", "default": "128,64", "description": "Comma-separated hidden layer sizes (e.g., 128,64)"},
-        "activation": {"type": "choice", "default": "relu", "options": ["relu", "tanh", "logistic"], "description": "Activation function"},
-        "solver": {"type": "choice", "default": "adam", "options": ["adam", "sgd", "lbfgs"], "description": "Optimization algorithm"},
-        "learning_rate_init": {"type": "float", "default": 0.001, "min": 0.0001, "max": 0.1, "description": "Initial learning rate"},
-        "max_iter": {"type": "int", "default": 300, "min": 50, "max": 2000, "description": "Max iterations"},
-        "alpha": {"type": "float", "default": 0.0001, "min": 0.00001, "max": 1.0, "description": "L2 regularization"},
+        "hidden_layer_sizes": {"type": "string", "default": "128,64", "description": "Tamaños de capas ocultas separados por coma (ej. 128,64)"},
+        "activation": {"type": "choice", "default": "relu", "options": ["relu", "tanh", "logistic"], "description": "Función de activación"},
+        "solver": {"type": "choice", "default": "adam", "options": ["adam", "sgd", "lbfgs"], "description": "Algoritmo de optimización"},
+        "learning_rate_init": {"type": "float", "default": 0.001, "min": 0.0001, "max": 0.1, "description": "Tasa de aprendizaje inicial"},
+        "max_iter": {"type": "int", "default": 1000, "min": 50, "max": 2000, "description": "Máx. iteraciones"},
+        "alpha": {"type": "float", "default": 0.0001, "min": 0.00001, "max": 1.0, "description": "Regularización L2"},
     },
 )
 
@@ -43,7 +43,7 @@ class NeuralNetworkModel(BaseModel):
         activation = kwargs.get("activation", "relu")
         solver = kwargs.get("solver", "adam")
         lr = float(kwargs.get("learning_rate_init", 0.001))
-        max_iter = int(kwargs.get("max_iter", 300))
+        max_iter = int(kwargs.get("max_iter", 1000))
         alpha = float(kwargs.get("alpha", 0.0001))
 
         X_scaled = self.scaler.fit_transform(X.values)
@@ -130,4 +130,5 @@ class NeuralNetworkModel(BaseModel):
         return self.model_info.to_dict()["hyperparameters"]
 
     def set_hyperparameters(self, **kwargs) -> None:
-        pass
+        if self.model is not None:
+            self.model.set_params(**kwargs)

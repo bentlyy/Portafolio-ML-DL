@@ -1,8 +1,8 @@
 # ML Portfolio
 
-A full-stack machine learning platform with interactive model training, dataset upload, and real-time predictions. Demonstrates expertise in ML algorithms, deep learning, and full-stack development.
+Plataforma full-stack de machine learning con entrenamiento interactivo de modelos, carga de datasets y predicciones en tiempo real. Demuestra experiencia en algoritmos ML, deep learning y desarrollo full-stack.
 
-## Architecture
+## Arquitectura
 
 ```
 ┌─────────────┐      ┌─────────────┐      ┌─────────────────────────┐
@@ -10,84 +10,84 @@ A full-stack machine learning platform with interactive model training, dataset 
 │  Vite 6     │      │ Express 5   │      │                         │
 │  Port 3001  │      │  Port 3000  │      │  Port 8000              │
 └─────────────┘      └─────────────┘      └─────────────────────────┘
-                                                  │
-                                    ┌─────────────┼─────────────┐
-                                    │             │             │
-                              Classification  Regression   Clustering
-                              Neural Network
+                                                   │
+                                     ┌─────────────┼─────────────┐
+                                     │             │             │
+                               Classification  Regression   Clustering
+                               Neural Network
 ```
 
-## Available Models (12 total)
+## Modelos Disponibles (12 en total)
 
-### Classification (4 models)
-| Model | Type | Best For |
-|-------|------|----------|
-| Random Forest | Ensemble | Non-linear patterns, robust baseline |
-| Gradient Boosting | Ensemble | Competition-grade tabular performance |
-| SVM | Kernel | High-dimensional spaces, complex boundaries |
-| Logistic Regression | Linear | Interpretable baseline, fast training |
+### Clasificación (4 modelos)
+| Modelo | Tipo | Ideal Para |
+|--------|------|------------|
+| Random Forest | Ensemble | Patrones no lineales, baseline robusto |
+| Gradient Boosting | Ensemble | Rendimiento competitivo en tabulares |
+| SVM | Kernel | Espacios de alta dimensión, fronteras complejas |
+| Logistic Regression | Lineal | Baseline interpretable, entrenamiento rápido |
 
-### Regression (4 models)
-| Model | Type | Best For |
-|-------|------|----------|
-| Linear Regression | Linear | Interpretable relationships |
-| Ridge Regression | Linear | Multicollinearity, L2 regularization |
-| Random Forest Regressor | Ensemble | Non-linear relationships |
-| Gradient Boosting Regressor | Ensemble | Complex feature interactions |
+### Regresión (4 modelos)
+| Modelo | Tipo | Ideal Para |
+|--------|------|------------|
+| Linear Regression | Lineal | Relaciones interpretables |
+| Ridge Regression | Lineal | Multicollinealidad, regularización L2 |
+| Random Forest Regressor | Ensemble | Relaciones no lineales |
+| Gradient Boosting Regressor | Ensemble | Interacciones complejas entre features |
 
-### Clustering (3 models)
-| Model | Type | Best For |
-|-------|------|----------|
-| K-Means | Centroid | Spherical clusters, fast |
-| DBSCAN | Density | Arbitrary shapes, outlier detection |
-| Agglomerative | Hierarchical | Tree-based cluster exploration |
+### Clustering (3 modelos)
+| Modelo | Tipo | Ideal Para |
+|--------|------|------------|
+| K-Means | Centroide | Clusters esféricos, rápido |
+| DBSCAN | Densidad | Formas arbitrarias, detección de outliers |
+| Agglomerative | Jerárquico | Exploración de clusters en árbol |
 
-### Neural Networks (1 model)
-| Model | Framework | Best For |
-|-------|-----------|----------|
-| MLP (Multi-Layer Perceptron) | scikit-learn | Neural network with configurable hidden layers |
+### Redes Neuronales (1 modelo)
+| Modelo | Framework | Ideal Para |
+|--------|-----------|------------|
+| MLP (Multi-Layer Perceptron) | scikit-learn | Red neuronal con capas ocultas configurables |
 
-## Project Structure
+## Estructura del Proyecto
 
 ```
 ml-portafolio/
 ├── frontend/                      # React + TypeScript (Vite)
 │   ├── src/
-│   │   ├── api/ml.ts              # ML service API client
+│   │   ├── api/ml.ts              # Cliente API del servicio ML
 │   │   ├── components/
-│   │   │   ├── ModelSelector.tsx  # Model category browser
-│   │   │   ├── DatasetUpload.tsx  # CSV upload + preview
-│   │   │   ├── TrainingPanel.tsx  # Hyperparameter config
-│   │   │   ├── MetricsDisplay.tsx # Results + visualizations
-│   │   │   └── PredictPanel.tsx   # Live predictions
-│   │   └── App.tsx                # Main app with routing
+│   │   │   ├── ModelSelector.tsx  # Navegador de categorías de modelos
+│   │   │   ├── DatasetUpload.tsx  # Carga CSV + previsualización
+│   │   │   ├── TrainingPanel.tsx  # Configuración de hiperparámetros
+│   │   │   ├── MetricsDisplay.tsx # Resultados + visualizaciones
+│   │   │   └── PredictPanel.tsx   # Predicciones en vivo
+│   │   └── App.tsx                # App principal con rutas
 │   └── vite.config.ts
-├── backend/                       # Express API proxy
+├── backend/                       # Proxy API Express
 │   └── src/
-│       ├── app.ts                 # Main server
+│       ├── app.ts                 # Servidor principal
 │       ├── routes/
 │       └── controllers/
 ├── ml-services/
-│   └── main-service/              # Unified ML service
+│   └── main-service/              # Servicio ML unificado
 │       ├── app/
 │       │   ├── main.py            # FastAPI app + endpoints
 │       │   └── models/
-│       │       ├── base.py        # BaseModel interface
-│       │       ├── registry.py    # Model registry pattern
-│       │       ├── classifiers.py # 4 classification models
-│       │       ├── regressors.py  # 4 regression models
-│       │       ├── clustering.py  # 3 clustering models
-│       │       └── neural_networks.py  # scikit-learn MLP
+│       │       ├── base.py        # Interfaz BaseModel
+│       │       ├── registry.py    # Patrón de registro de modelos
+│       │       ├── classifiers.py # 4 modelos de clasificación
+│       │       ├── regressors.py  # 4 modelos de regresión
+│       │       ├── clustering.py  # 3 modelos de clustering
+│       │       └── neural_networks.py  # MLP de scikit-learn
 │       └── scripts/
-│           └── generate_datasets.py  # Sample dataset generator
+│           └── generate_datasets.py  # Generador de datasets de ejemplo
 ├── infra/docker/                  # Docker Compose
-├── data/                          # Datasets storage
-└── docs/                          # Documentation
+├── data/                          # Almacenamiento de datasets
+└── docs/                          # Documentación
 ```
 
-## Quick Start
+## Inicio Rápido
 
-### Docker Compose (Recommended)
+### Docker Compose (Recomendado)
 
 ```bash
 cd infra/docker
@@ -99,7 +99,7 @@ docker-compose up --build
 - ML Service: http://localhost:8000
 - API Docs: http://localhost:8000/docs
 
-### Manual Setup
+### Instalación Manual
 
 ```bash
 # 1. ML Service
@@ -120,21 +120,21 @@ npm install
 npm run dev
 ```
 
-## API Endpoints
+## Endpoints de API
 
-### ML Service (via `/api/ml`)
+### ML Service (vía `/api/ml`)
 
-| Method | Endpoint | Description |
+| Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| GET | `/api/ml/health` | Service health check |
-| GET | `/api/ml/models` | List all available models |
-| GET | `/api/ml/models/{id}` | Get model info + hyperparameters |
-| POST | `/api/ml/upload-dataset` | Upload CSV, get dataset analysis |
-| POST | `/api/ml/models/{id}/train` | Train model with dataset |
-| POST | `/api/ml/predict` | Predict with raw data |
-| POST | `/api/ml/models/{id}/predict-from-file` | Predict from CSV |
+| GET | `/api/ml/health` | Verificar estado del servicio |
+| GET | `/api/ml/models` | Listar todos los modelos disponibles |
+| GET | `/api/ml/models/{id}` | Obtener info del modelo + hiperparámetros |
+| POST | `/api/ml/upload-dataset` | Cargar CSV, obtener análisis del dataset |
+| POST | `/api/ml/models/{id}/train` | Entrenar modelo con dataset |
+| POST | `/api/ml/predict` | Predecir con datos en bruto |
+| POST | `/api/ml/models/{id}/predict-from-file` | Predecir desde CSV |
 
-### Training Request
+### Ejemplo de Entrenamiento
 
 ```bash
 curl -X POST http://localhost:3000/api/ml/models/random_forest/train \
@@ -143,31 +143,31 @@ curl -X POST http://localhost:3000/api/ml/models/random_forest/train \
   -F 'hyperparameters={"n_estimators": 200, "max_depth": 15}'
 ```
 
-### Sample Datasets
+### Datasets de Ejemplo
 
-Generate pre-built datasets (Iris, Wine, Breast Cancer, Titanic, Housing):
+Genera datasets preconstruidos (Iris, Wine, Breast Cancer, Titanic, Housing):
 
 ```bash
 cd ml-services/main-service
 python scripts/generate_datasets.py
 ```
 
-Datasets saved to `ml-services/main-service/scripts/datasets/`
+Los datasets se guardan en `ml-services/main-service/scripts/datasets/`
 
-## Features
+## Funcionalidades
 
-- **12 ML Models** across 4 categories (classification, regression, clustering, neural networks)
-- **Interactive Playground** - Select model → Upload dataset → Configure hyperparameters → Train → Predict
-- **Real-time Metrics** - Accuracy, Precision, Recall, F1, MSE, RMSE, R², Silhouette Score
-- **Visualizations** - Confusion matrix, feature importance bars, classification reports
-- **CSV Upload** - Drag & drop with dataset preview, column analysis, missing value detection
-- **Hyperparameter Tuning** - Configure model parameters via UI with type validation
-- **Neural Network** - scikit-learn MLP with configurable hidden layers
+- **12 Modelos ML** en 4 categorías (clasificación, regresión, clustering, redes neuronales)
+- **Playground Interactivo** - Seleccionar modelo → Cargar dataset → Configurar hiperparámetros → Entrenar → Predecir
+- **Métricas en Tiempo Real** - Accuracy, Precision, Recall, F1, MSE, RMSE, R², Silhouette Score
+- **Visualizaciones** - Matriz de confusión, barras de importancia de features, reportes de clasificación
+- **Carga CSV** - Arrastrar y soltar con previsualización, análisis de columnas, detección de valores faltantes
+- **Ajuste de Hiperparámetros** - Configurar parámetros del modelo vía UI con validación de tipos
+- **Red Neuronal** - MLP de scikit-learn con capas ocultas configurables
 
-## Tech Stack
+## Stack Tecnológico
 
 - **Frontend**: React 19, TypeScript, Vite 6
 - **Backend**: Express 5, TypeScript, Axios
 - **ML Service**: FastAPI, Python 3.10, scikit-learn
-- **Infrastructure**: Docker, Docker Compose
-- **ML Libraries**: scikit-learn, pandas, numpy, scipy
+- **Infraestructura**: Docker, Docker Compose
+- **Librerías ML**: scikit-learn, pandas, numpy, scipy

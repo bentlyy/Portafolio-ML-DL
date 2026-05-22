@@ -42,6 +42,18 @@ function PlaygroundPage() {
     }).catch(err => console.error('Error al cargar modelos:', err));
   }, []);
 
+  const autoSelectTarget = (info: DatasetInfo) => {
+    const cols = info.column_names;
+    setTargetColumn(cols[cols.length - 1] || '');
+  };
+
+  const handleModelSelect = (model: ModelInfo | null) => {
+    setSelectedModel(model);
+    if (model && datasetInfo && model.category !== 'clustering') {
+      autoSelectTarget(datasetInfo);
+    }
+  };
+
   const handleFileUpload = async (file: File) => {
     setDatasetFile(file);
     setError(null);
@@ -49,10 +61,7 @@ function PlaygroundPage() {
       const info = await mlApi.uploadDataset(file);
       setDatasetInfo(info);
       if (selectedModel && selectedModel.category !== 'clustering') {
-        const numericCols = Object.entries(info.dtypes)
-          .filter(([, dtype]) => dtype.includes('int') || dtype.includes('float'))
-          .map(([col]) => col);
-        setTargetColumn(numericCols[numericCols.length - 1] || '');
+        autoSelectTarget(info);
       }
     } catch (err) {
       const axiosErr = err as { response?: { data?: { detail?: string } } };
@@ -62,6 +71,10 @@ function PlaygroundPage() {
 
   const handleTrain = async () => {
     if (!selectedModel || !datasetFile) return;
+    if (selectedModel.category !== 'clustering' && !targetColumn) {
+      setError('Selecciona una columna objetivo antes de entrenar.');
+      return;
+    }
     setLoading(true);
     setError(null);
     setTrainingResult(null);
@@ -86,7 +99,7 @@ function PlaygroundPage() {
             models={models}
             categories={categories}
             selectedModel={selectedModel}
-            onSelect={setSelectedModel}
+            onSelect={handleModelSelect}
           />
         </div>
 

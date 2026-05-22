@@ -50,8 +50,11 @@ export interface TrainingResult {
   timestamp: string;
   feature_importance?: Record<string, number>;
   confusion_matrix?: number[][];
-  classification_report?: Record<string, PerClassMetrics | number>;
+  classification_report?: Record<string, unknown>;
   algorithm_details?: Record<string, unknown>;
+  predictions?: number[];
+  actual_values?: number[];
+  residuals?: number[];
 }
 
 export interface PredictionResult {

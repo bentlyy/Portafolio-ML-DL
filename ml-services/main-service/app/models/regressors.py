@@ -80,6 +80,10 @@ class LinearRegressionModel(BaseModel):
         training_time = time.time() - start
 
         y_pred = self.model.predict(X)
+        y_pred_list = [round(float(v), 4) for v in y_pred]
+        y_actual_list = [round(float(v), 4) for v in y]
+        residuals_list = [round(float(y_actual_list[i] - y_pred_list[i]), 4) for i in range(len(y_pred_list))]
+
         coef = self.model.coef_ if hasattr(self.model, "coef_") else [0]
         if hasattr(coef, "flatten"):
             coef = coef.flatten()
@@ -91,6 +95,9 @@ class LinearRegressionModel(BaseModel):
             training_time=training_time,
             model_params=self.model.get_params(),
             feature_importance=feature_imp,
+            predictions=y_pred_list,
+            actual_values=y_actual_list,
+            residuals=residuals_list,
         )
 
     def predict(self, X: pd.DataFrame) -> dict:
@@ -116,6 +123,10 @@ class RidgeRegressionModel(BaseModel):
         training_time = time.time() - start
 
         y_pred = self.model.predict(X)
+        y_pred_list = [round(float(v), 4) for v in y_pred]
+        y_actual_list = [round(float(v), 4) for v in y]
+        residuals_list = [round(float(y_actual_list[i] - y_pred_list[i]), 4) for i in range(len(y_pred_list))]
+
         coef = self.model.coef_ if hasattr(self.model, "coef_") else [0]
         if hasattr(coef, "flatten"):
             coef = coef.flatten()
@@ -127,6 +138,9 @@ class RidgeRegressionModel(BaseModel):
             training_time=training_time,
             model_params=self.model.get_params(),
             feature_importance=feature_imp,
+            predictions=y_pred_list,
+            actual_values=y_actual_list,
+            residuals=residuals_list,
         )
 
     def predict(self, X: pd.DataFrame) -> dict:
@@ -144,6 +158,8 @@ class RandomForestRegressorModel(BaseModel):
     def __init__(self):
         super().__init__(RANDOM_FOREST_REGRESSOR_INFO)
         self.model = RandomForestRegressor(n_estimators=100, max_depth=10, random_state=42)
+        self._X = None
+        self._y = None
 
     def train(self, X: pd.DataFrame, y: pd.Series, **kwargs) -> TrainingResult:
         start = time.time()
@@ -152,7 +168,14 @@ class RandomForestRegressorModel(BaseModel):
         training_time = time.time() - start
 
         y_pred = self.model.predict(X)
-        feature_imp = dict(zip(X.columns, self.model.feature_importances_.tolist()))
+        y_pred_list = [round(float(v), 4) for v in y_pred]
+        y_actual_list = [round(float(v), 4) for v in y]
+        residuals_list = [round(float(y_actual_list[i] - y_pred_list[i]), 4) for i in range(len(y_pred_list))]
+
+        feature_imp = dict(zip(X.columns, [round(float(v), 4) for v in self.model.feature_importances_]))
+
+        self._X = X
+        self._y = y
 
         return TrainingResult(
             model_id=self.model_info.model_id,
@@ -160,6 +183,9 @@ class RandomForestRegressorModel(BaseModel):
             training_time=training_time,
             model_params=self.model.get_params(),
             feature_importance=feature_imp,
+            predictions=y_pred_list,
+            actual_values=y_actual_list,
+            residuals=residuals_list,
         )
 
     def predict(self, X: pd.DataFrame) -> dict:
@@ -177,6 +203,8 @@ class GradientBoostingRegressorModel(BaseModel):
     def __init__(self):
         super().__init__(GRADIENT_BOOSTING_REGRESSOR_INFO)
         self.model = GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=3, random_state=42)
+        self._X = None
+        self._y = None
 
     def train(self, X: pd.DataFrame, y: pd.Series, **kwargs) -> TrainingResult:
         start = time.time()
@@ -185,7 +213,20 @@ class GradientBoostingRegressorModel(BaseModel):
         training_time = time.time() - start
 
         y_pred = self.model.predict(X)
-        feature_imp = dict(zip(X.columns, self.model.feature_importances_.tolist()))
+        y_pred_list = [round(float(v), 4) for v in y_pred]
+        y_actual_list = [round(float(v), 4) for v in y]
+        residuals_list = [round(float(y_actual_list[i] - y_pred_list[i]), 4) for i in range(len(y_pred_list))]
+
+        feature_imp = dict(zip(X.columns, [round(float(v), 4) for v in self.model.feature_importances_]))
+
+        train_loss = [round(float(v), 4) for v in self.model.train_score_]
+        algorithm_details = {
+            "train_loss": train_loss,
+            "n_iterations": len(train_loss),
+        }
+
+        self._X = X
+        self._y = y
 
         return TrainingResult(
             model_id=self.model_info.model_id,
@@ -193,6 +234,10 @@ class GradientBoostingRegressorModel(BaseModel):
             training_time=training_time,
             model_params=self.model.get_params(),
             feature_importance=feature_imp,
+            predictions=y_pred_list,
+            actual_values=y_actual_list,
+            residuals=residuals_list,
+            algorithm_details=algorithm_details,
         )
 
     def predict(self, X: pd.DataFrame) -> dict:

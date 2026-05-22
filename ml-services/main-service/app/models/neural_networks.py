@@ -5,6 +5,7 @@ from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from app.models.base import BaseModel, ModelInfo, TrainingResult
+from sklearn.metrics import confusion_matrix, classification_report
 
 NEURAL_NETWORK_INFO = ModelInfo(
     model_id="neural_network",
@@ -92,6 +93,7 @@ class NeuralNetworkModel(BaseModel):
                 "mae": round(float(mean_absolute_error(y_values, y_pred)), 4),
                 "r2": round(float(r2_score(y_values, y_pred)), 4),
             }
+            residuals = (y_values - y_pred).tolist()
         else:
             metrics = {
                 "accuracy": round(float(accuracy_score(y_values, y_pred)), 4),
@@ -99,17 +101,77 @@ class NeuralNetworkModel(BaseModel):
                 "recall": round(float(recall_score(y_values, y_pred, average="weighted", zero_division=0)), 4),
                 "f1": round(float(f1_score(y_values, y_pred, average="weighted", zero_division=0)), 4),
             }
+            residuals = None
 
         model_params = self.model.get_params()
         if "hidden_layer_sizes" in model_params:
             model_params["hidden_layer_sizes"] = list(model_params["hidden_layer_sizes"])
 
-        return TrainingResult(
+        n_layers = getattr(self.model, "n_layers_", 0)
+        total_params = 0
+        for w in getattr(self.model, "coefs_", []):
+            total_params += w.size
+        for b in getattr(self.model, "intercepts_", []):
+            total_params += b.size
+
+        architecture = (
+            [X_scaled.shape[1]]
+            + list(hidden_layers)
+            + [self.model.n_outputs_]
+        )
+
+        best_loss_val = getattr(self.model, "best_loss_", None)
+        if best_loss_val is None or (isinstance(best_loss_val, float) and np.isinf(best_loss_val)):
+            best_loss_val = 0.0
+
+        algorithm_details = {
+            "loss_curve": [round(float(v), 6) for v in getattr(self.model, "loss_curve_", [])],
+            "validation_scores": [round(float(v), 6) for v in getattr(self.model, "validation_scores_", [])],
+            "n_iter": int(getattr(self.model, "n_iter_", 0)),
+            "best_loss": round(float(best_loss_val), 6),
+            "n_layers": int(n_layers),
+            "architecture": architecture,
+            "total_parameters": int(total_params),
+            "activation": activation,
+            "solver": solver,
+            "converged": int(getattr(self.model, "n_iter_", 0)) < max_iter,
+            "layer_weights_shapes": [list(w.shape) for w in getattr(self.model, "coefs_", [])],
+        }
+
+        result = TrainingResult(
             model_id=self.model_info.model_id,
             metrics=metrics,
             training_time=training_time,
             model_params=model_params,
+            algorithm_details=algorithm_details,
         )
+
+        if self.task_type == "regression":
+            result.predictions = [round(float(v), 4) for v in y_pred]
+            result.actual_values = [round(float(v), 4) for v in y_values]
+            result.residuals = [round(float(v), 4) for v in residuals]
+        else:
+            cm = confusion_matrix(y_values, y_pred).tolist()
+            result.confusion_matrix = cm
+            report_dict = classification_report(
+                y_values, y_pred, output_dict=True, zero_division=0
+            )
+            clean_report = {}
+            for k, v in report_dict.items():
+                if isinstance(v, dict):
+                    clean_report[k] = {
+                        "precision": round(float(v.get("precision", 0)), 4),
+                        "recall": round(float(v.get("recall", 0)), 4),
+                        "f1-score": round(float(v.get("f1-score", 0)), 4),
+                        "support": int(v.get("support", 0)),
+                    }
+                else:
+                    clean_report[k] = round(float(v), 4)
+            result.classification_report = clean_report
+            result.predictions = [round(float(v), 4) for v in y_pred]
+            result.actual_values = [round(float(v), 4) for v in y_values]
+
+        return result
 
     def predict(self, X: pd.DataFrame) -> dict:
         X_scaled = self.scaler.transform(X.values)

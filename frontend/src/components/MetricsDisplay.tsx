@@ -1,4 +1,7 @@
 import { type TrainingResult, type PerClassMetrics } from '../api/ml';
+import RegressionVisualizations from './RegressionVisualizations';
+import ClusteringVisualizations from './ClusteringVisualizations';
+import NeuralNetworkVisualizations from './NeuralNetworkVisualizations';
 
 interface Props {
   result: TrainingResult;
@@ -130,7 +133,7 @@ function ConfusionMatrixDisplay({ matrix, report }: { matrix: number[][]; report
   );
 }
 
-function ClassificationReport({ report }: { report: Record<string, PerClassMetrics | number> }) {
+function ClassificationReport({ report }: { report: Record<string, unknown> }) {
   return (
     <div className="classification-report">
       <h4>Reporte de Clasificación (Classification Report)</h4>
@@ -295,6 +298,18 @@ export default function MetricsDisplay({ result }: Props) {
               })}
           </div>
         </div>
+      )}
+
+      {['linear_regression', 'ridge', 'random_forest_regressor', 'gradient_boosting_regressor', 'neural_network'].includes(result.model_id) && (
+        <RegressionVisualizations result={result} />
+      )}
+
+      {result.model_id === 'neural_network' && result.algorithm_details && (
+        <NeuralNetworkVisualizations result={result} />
+      )}
+
+      {['kmeans', 'dbscan', 'hierarchical'].includes(result.model_id) && (
+        <ClusteringVisualizations result={result} />
       )}
 
       {result.classification_report && (

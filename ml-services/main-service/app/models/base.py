@@ -48,6 +48,9 @@ class TrainingResult:
         confusion_matrix: list[list[int]] | None = None,
         classification_report: dict | None = None,
         algorithm_details: dict[str, Any] | None = None,
+        predictions: list[float] | None = None,
+        actual_values: list[float] | None = None,
+        residuals: list[float] | None = None,
     ):
         self.model_id = model_id
         self.metrics = metrics
@@ -57,6 +60,9 @@ class TrainingResult:
         self.confusion_matrix = confusion_matrix
         self.classification_report = classification_report
         self.algorithm_details = algorithm_details
+        self.predictions = predictions
+        self.actual_values = actual_values
+        self.residuals = residuals
         self.timestamp = datetime.now().isoformat()
 
     def to_dict(self) -> dict:
@@ -75,6 +81,12 @@ class TrainingResult:
             result["classification_report"] = self.classification_report
         if self.algorithm_details:
             result["algorithm_details"] = self.algorithm_details
+        if self.predictions is not None:
+            result["predictions"] = self.predictions
+        if self.actual_values is not None:
+            result["actual_values"] = self.actual_values
+        if self.residuals is not None:
+            result["residuals"] = self.residuals
         return result
 
 

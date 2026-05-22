@@ -1,5 +1,14 @@
 # ML Portfolio
 
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)
+![Express](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-1.6-F7931E?logo=scikitlearn&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+
 Plataforma full-stack de machine learning con entrenamiento interactivo de modelos, carga de datasets y predicciones en tiempo real. Demuestra experiencia en algoritmos ML, deep learning y desarrollo full-stack.
 
 ## Arquitectura
@@ -55,23 +64,29 @@ ml-portafolio/
 │   ├── src/
 │   │   ├── api/ml.ts              # Cliente API del servicio ML
 │   │   ├── components/
-│   │   │   ├── ModelSelector.tsx  # Navegador de categorías de modelos
-│   │   │   ├── DatasetUpload.tsx  # Carga CSV + previsualización
-│   │   │   ├── TrainingPanel.tsx  # Configuración de hiperparámetros
-│   │   │   ├── MetricsDisplay.tsx # Resultados + visualizaciones
-│   │   │   └── PredictPanel.tsx   # Predicciones en vivo
+│   │   │   ├── ModelSelector.tsx      # Navegador de categorías de modelos
+│   │   │   ├── DatasetUpload.tsx      # Carga CSV + previsualización
+│   │   │   ├── TrainingPanel.tsx      # Configuración de hiperparámetros
+│   │   │   ├── MetricsDisplay.tsx     # Resultados + visualizaciones
+│   │   │   ├── PredictPanel.tsx       # Predicciones en vivo
+│   │   │   └── AlgorithmExplanations.tsx  # Explicaciones de algoritmos
 │   │   └── App.tsx                # App principal con rutas
 │   └── vite.config.ts
 ├── backend/                       # Proxy API Express
 │   └── src/
 │       ├── app.ts                 # Servidor principal
 │       ├── routes/
-│       └── controllers/
+│       │   └── predictionRoutes.ts
+│       ├── controllers/
+│       │   └── predictionController.ts
+│       └── services/
+│           └── mlProxyService.ts  # Proxy al ML Service
 ├── ml-services/
 │   └── main-service/              # Servicio ML unificado
 │       ├── app/
 │       │   ├── main.py            # FastAPI app + endpoints
 │       │   └── models/
+│       │       ├── __init__.py    # Package marker
 │       │       ├── base.py        # Interfaz BaseModel
 │       │       ├── registry.py    # Patrón de registro de modelos
 │       │       ├── classifiers.py # 4 modelos de clasificación
@@ -79,10 +94,9 @@ ml-portafolio/
 │       │       ├── clustering.py  # 3 modelos de clustering
 │       │       └── neural_networks.py  # MLP de scikit-learn
 │       └── scripts/
-│           └── generate_datasets.py  # Generador de datasets de ejemplo
-├── infra/docker/                  # Docker Compose
-├── data/                          # Almacenamiento de datasets
-└── docs/                          # Documentación
+│           ├── generate_datasets.py  # Generador de datasets de ejemplo
+│           └── datasets/             # Datasets generados (CSV)
+└── infra/docker/                  # Docker Compose
 ```
 
 ## Inicio Rápido
@@ -164,10 +178,21 @@ Los datasets se guardan en `ml-services/main-service/scripts/datasets/`
 - **Ajuste de Hiperparámetros** - Configurar parámetros del modelo vía UI con validación de tipos
 - **Red Neuronal** - MLP de scikit-learn con capas ocultas configurables
 
+## Capturas de Pantalla
+
+> *(Agrega aquí capturas de pantalla de la aplicación)*
+
+| Vista | Descripción |
+|-------|-------------|
+| ![Selector de Modelos](https://via.placeholder.com/400x250?text=Model+Selector) | Panel de selección con 12 modelos en 4 categorías |
+| ![Entrenamiento](https://via.placeholder.com/400x250?text=Training) | Configuración de hiperparámetros y entrenamiento |
+| ![Métricas](https://via.placeholder.com/400x250?text=Metrics) | Resultados con métricas y visualizaciones |
+| ![Predicciones](https://via.placeholder.com/400x250?text=Predictions) | Predicciones en tiempo real sobre nuevos datos |
+
 ## Stack Tecnológico
 
-- **Frontend**: React 19, TypeScript, Vite 6
-- **Backend**: Express 5, TypeScript, Axios
-- **ML Service**: FastAPI, Python 3.10, scikit-learn
+- **Frontend**: React 19, TypeScript, Vite 6, React Router 7, Axios, Vitest
+- **Backend**: Express 5, TypeScript, Axios, http-proxy-middleware, cors, dotenv
+- **ML Service**: FastAPI, Python 3.10, scikit-learn, uvicorn
 - **Infraestructura**: Docker, Docker Compose
-- **Librerías ML**: scikit-learn, pandas, numpy, scipy
+- **Librerías ML**: scikit-learn, pandas, numpy, scipy, joblib

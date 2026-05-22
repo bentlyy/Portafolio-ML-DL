@@ -36,6 +36,13 @@ export interface DatasetInfo {
   missing_values: Record<string, number>;
 }
 
+export interface PerClassMetrics {
+  precision: number;
+  recall: number;
+  'f1-score': number;
+  support: number;
+}
+
 export interface TrainingResult {
   model_id: string;
   metrics: Record<string, number>;
@@ -43,7 +50,8 @@ export interface TrainingResult {
   timestamp: string;
   feature_importance?: Record<string, number>;
   confusion_matrix?: number[][];
-  classification_report?: Record<string, Record<string, number>>;
+  classification_report?: Record<string, PerClassMetrics | number>;
+  algorithm_details?: Record<string, unknown>;
 }
 
 export interface PredictionResult {

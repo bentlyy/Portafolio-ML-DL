@@ -104,8 +104,7 @@ export default function TrainingPanel({ model, onHyperparameterChange, onTrain, 
           {Object.entries(model.hyperparameters).map(([key, hp]) => (
             <div key={key} className="param-row">
               <label>
-                {key}
-                <span className="param-desc">{hp.description}</span>
+                {hp.description}
               </label>
               {renderInput(key, hp)}
             </div>

@@ -10,45 +10,47 @@ from sklearn.metrics import (
 )
 from app.models.base import BaseModel, ModelInfo, TrainingResult
 
+ENSEMBLE_NOTE = "Ventajas: Maneja relaciones no lineales, resistente a sobreajuste, provee importancia de características. Desventajas: Requiere más memoria, menos interpretable que modelos lineales."
+
 RANDOM_FOREST_INFO = ModelInfo(
     model_id="random_forest",
     name="Random Forest",
     model_type="ensemble",
-    description="Método de ensamblaje que usa múltiples árboles de decisión con bagging. Robusto contra sobreajuste, maneja bien relaciones no lineales.",
+    description="Ensamblaje de múltiples árboles de decisión entrenados con bootstrap aggregating (bagging). Cada árbol vota y se toma la mayoría. Robusto contra sobreajuste gracias al promedio de árboles.",
     category="classification",
     supported_tasks=["binary", "multiclass"],
     hyperparameters={
-        "n_estimators": {"type": "int", "default": 100, "min": 10, "max": 500, "description": "Número de árboles"},
-        "max_depth": {"type": "int", "default": 10, "min": 2, "max": 50, "description": "Profundidad máxima del árbol"},
-        "min_samples_split": {"type": "int", "default": 2, "min": 2, "max": 20, "description": "Mín. muestras para dividir"},
+        "n_estimators": {"type": "int", "default": 100, "min": 10, "max": 500, "description": "Número de árboles (n_estimators)"},
+        "max_depth": {"type": "int", "default": 10, "min": 2, "max": 50, "description": "Profundidad máxima del árbol (max_depth)"},
+        "min_samples_split": {"type": "int", "default": 2, "min": 2, "max": 20, "description": "Mín. muestras para dividir (min_samples_split)"},
     },
 )
 
 GRADIENT_BOOSTING_INFO = ModelInfo(
     model_id="gradient_boosting",
-    name="Gradient Boosting (XGBoost-style)",
+    name="Gradient Boosting",
     model_type="ensemble",
-    description="Ensamblaje secuencial que corrige errores de árboles anteriores. Estado del arte para competiciones de datos tabulares.",
+    description="Ensamblaje secuencial donde cada nuevo árbol corrige los errores del anterior usando gradient descent. Estado del arte para datos tabulares en competiciones.",
     category="classification",
     supported_tasks=["binary", "multiclass"],
     hyperparameters={
-        "n_estimators": {"type": "int", "default": 100, "min": 10, "max": 500, "description": "Número de rondas de boosting"},
-        "learning_rate": {"type": "float", "default": 0.1, "min": 0.01, "max": 1.0, "description": "Tasa de aprendizaje"},
-        "max_depth": {"type": "int", "default": 3, "min": 1, "max": 20, "description": "Profundidad máxima del árbol"},
+        "n_estimators": {"type": "int", "default": 100, "min": 10, "max": 500, "description": "Número de rondas de boosting (n_estimators)"},
+        "learning_rate": {"type": "float", "default": 0.1, "min": 0.01, "max": 1.0, "description": "Tasa de aprendizaje (learning_rate)"},
+        "max_depth": {"type": "int", "default": 3, "min": 1, "max": 20, "description": "Profundidad máxima del árbol (max_depth)"},
     },
 )
 
 SVM_INFO = ModelInfo(
     model_id="svm",
-    name="Support Vector Machine (SVM)",
+    name="SVM (Support Vector Machine)",
     model_type="kernel",
-    description="Encuentra el hiperplano óptimo con margen máximo. Efectivo en espacios de alta dimensionalidad usando trucos de kernel.",
+    description="Encuentra el hiperplano óptimo que maximiza el margen entre clases. Usa el truco del kernel para proyectar datos a espacios de mayor dimensión. Efectivo en alta dimensionalidad.",
     category="classification",
     supported_tasks=["binary", "multiclass"],
     hyperparameters={
-        "C": {"type": "float", "default": 1.0, "min": 0.01, "max": 100.0, "description": "Parámetro de regularización"},
-        "kernel": {"type": "choice", "default": "rbf", "options": ["linear", "rbf", "poly"], "description": "Tipo de kernel"},
-        "gamma": {"type": "choice", "default": "scale", "options": ["scale", "auto"], "description": "Coeficiente del kernel"},
+        "C": {"type": "float", "default": 1.0, "min": 0.01, "max": 100.0, "description": "Regularización (C) — menor = margen más amplio"},
+        "kernel": {"type": "choice", "default": "rbf", "options": ["linear", "rbf", "poly"], "description": "Tipo de kernel (kernel)"},
+        "gamma": {"type": "choice", "default": "scale", "options": ["scale", "auto"], "description": "Coeficiente del kernel (gamma)"},
     },
 )
 
@@ -56,13 +58,13 @@ LOGISTIC_REGRESSION_INFO = ModelInfo(
     model_id="logistic_regression",
     name="Regresión Logística",
     model_type="linear",
-    description="Clasificador lineal que usa función logística. Interpretable, rápido, buen modelo de referencia.",
+    description="Modelo lineal que estima probabilidades usando la función sigmoide. Altamente interpretable: cada coeficiente indica la dirección e intensidad de cada característica.",
     category="classification",
     supported_tasks=["binary", "multiclass"],
     hyperparameters={
-        "C": {"type": "float", "default": 1.0, "min": 0.01, "max": 100.0, "description": "Regularización inversa"},
-        "penalty": {"type": "choice", "default": "l2", "options": ["l1", "l2", "elasticnet"], "description": "Tipo de penalización"},
-        "max_iter": {"type": "int", "default": 1000, "min": 100, "max": 10000, "description": "Máx. iteraciones"},
+        "C": {"type": "float", "default": 1.0, "min": 0.01, "max": 100.0, "description": "Regularización inversa (C) — menor = más regularización"},
+        "penalty": {"type": "choice", "default": "l2", "options": ["l1", "l2", "elasticnet"], "description": "Tipo de penalización (penalty)"},
+        "max_iter": {"type": "int", "default": 1000, "min": 100, "max": 10000, "description": "Máx. iteraciones (max_iter)"},
     },
 )
 
@@ -180,6 +182,15 @@ class SVMClassifierModel(BaseModel):
 
         y_pred = self.model.predict(X)
 
+        n_support = self.model.n_support_.tolist() if hasattr(self.model, "n_support_") else []
+        classes = self.model.classes_.tolist()
+        support_details = {
+            "vectores_soporte_por_clase": {
+                str(cls): int(n) for cls, n in zip(classes, n_support)
+            },
+            "total_vectores_soporte": int(sum(n_support)),
+        }
+
         return TrainingResult(
             model_id=self.model_info.model_id,
             metrics=self._calc_metrics(y, y_pred),
@@ -187,6 +198,7 @@ class SVMClassifierModel(BaseModel):
             model_params=self.model.get_params(),
             confusion_matrix=confusion_matrix(y, y_pred).tolist(),
             classification_report=classification_report(y, y_pred, output_dict=True),
+            algorithm_details=support_details,
         )
 
     def predict(self, X: pd.DataFrame) -> dict:
@@ -235,11 +247,20 @@ class LogisticRegressionModel(BaseModel):
         training_time = time.time() - start
 
         y_pred = self.model.predict(X)
+
         if self.model.coef_.ndim > 1:
-            coef = np.mean(np.abs(self.model.coef_), axis=0)
+            coef_abs = np.mean(np.abs(self.model.coef_), axis=0)
+            coef_signed = np.mean(self.model.coef_, axis=0)
         else:
-            coef = np.abs(self.model.coef_)
-        feature_imp = dict(zip(X.columns, [round(float(c), 4) for c in coef]))
+            coef_abs = np.abs(self.model.coef_)
+            coef_signed = self.model.coef_.flatten()
+        feature_imp = dict(zip(X.columns, [round(float(c), 4) for c in coef_abs]))
+
+        coef_details = {
+            "coeficientes_por_caracteristica": {
+                col: round(float(c), 4) for col, c in zip(X.columns, coef_signed)
+            },
+        }
 
         return TrainingResult(
             model_id=self.model_info.model_id,
@@ -249,6 +270,7 @@ class LogisticRegressionModel(BaseModel):
             feature_importance=feature_imp,
             confusion_matrix=confusion_matrix(y, y_pred).tolist(),
             classification_report=classification_report(y, y_pred, output_dict=True),
+            algorithm_details=coef_details,
         )
 
     def predict(self, X: pd.DataFrame) -> dict:

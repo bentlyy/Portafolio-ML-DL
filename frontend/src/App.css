@@ -575,6 +575,254 @@ th {
   border-top: 2px solid var(--border);
 }
 
+.class-name {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Per-Class Metrics Chart */
+.class-chart {
+  margin-top: 1rem;
+}
+
+.class-chart h4 {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.class-chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.class-chart-card {
+  background: var(--bg-input);
+  border-radius: var(--radius);
+  padding: 1rem;
+  border: 1px solid var(--border);
+}
+
+.class-chart-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 0.75rem;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.class-metrics-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.class-bar-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 55px;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.class-bar-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.class-bar-track {
+  height: 16px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.class-bar-fill {
+  height: 100%;
+  border-radius: 8px;
+  transition: width 0.5s ease;
+}
+
+.class-bar-fill.precision { background: #3b82f6; }
+.class-bar-fill.recall { background: #22c55e; }
+.class-bar-fill.f1 { background: #a855f7; }
+
+.class-bar-value {
+  font-size: 0.75rem;
+  font-family: monospace;
+  text-align: right;
+  color: var(--text-primary);
+}
+
+/* Improved Confusion Matrix */
+.cm-wrapper {
+  display: grid;
+  grid-template-columns: 100px repeat(3, 70px);
+  gap: 2px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.cm-corner {
+  height: 30px;
+}
+
+.cm-col-label {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding-bottom: 4px;
+}
+
+.cm-row-group {
+  display: contents;
+}
+
+.cm-row-label {
+  text-align: right;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding-right: 8px;
+}
+
+.cm-cell {
+  width: 70px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+
+.cm-cell-value {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.cm-legend {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.cm-legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 4px;
+}
+
+.cm-legend-dot.correct { background: var(--success); }
+.cm-legend-dot.incorrect { background: var(--border); }
+
+/* Algorithm Details */
+.algorithm-details {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--bg-input);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.algorithm-details h4 {
+  color: var(--accent);
+  margin-bottom: 0.75rem;
+}
+
+.algo-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.algo-detail-card {
+  background: var(--bg-primary);
+  padding: 0.75rem;
+  border-radius: var(--radius);
+  text-align: center;
+}
+
+.algo-detail-label {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.algo-detail-value {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 0.25rem;
+}
+
+.algo-detail-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+
+/* Coefficient bars for Logistic Regression */
+.coef-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.coef-bar-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 80px;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.coef-name {
+  font-size: 0.85rem;
+}
+
+.coef-bar-track {
+  height: 20px;
+  background: var(--bg-primary);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.coef-bar {
+  height: 100%;
+  transition: width 0.3s;
+  position: absolute;
+  top: 0;
+  border-radius: 4px;
+}
+
+.coef-bar.positive {
+  background: #22c55e;
+  left: 50%;
+}
+
+.coef-bar.negative {
+  background: #ef4444;
+  right: 50%;
+}
+
+.coef-value {
+  font-size: 0.85rem;
+  text-align: right;
+  font-family: monospace;
+}
+
 /* Predict Panel */
 .predict-panel {
   display: flex;

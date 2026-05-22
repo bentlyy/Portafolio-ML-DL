@@ -47,6 +47,7 @@ class TrainingResult:
         feature_importance: dict[str, float] | None = None,
         confusion_matrix: list[list[int]] | None = None,
         classification_report: dict | None = None,
+        algorithm_details: dict[str, Any] | None = None,
     ):
         self.model_id = model_id
         self.metrics = metrics
@@ -55,6 +56,7 @@ class TrainingResult:
         self.feature_importance = feature_importance
         self.confusion_matrix = confusion_matrix
         self.classification_report = classification_report
+        self.algorithm_details = algorithm_details
         self.timestamp = datetime.now().isoformat()
 
     def to_dict(self) -> dict:
@@ -71,6 +73,8 @@ class TrainingResult:
             result["confusion_matrix"] = self.confusion_matrix
         if self.classification_report:
             result["classification_report"] = self.classification_report
+        if self.algorithm_details:
+            result["algorithm_details"] = self.algorithm_details
         return result
 
 
